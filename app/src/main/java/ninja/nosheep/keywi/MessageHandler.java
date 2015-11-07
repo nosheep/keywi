@@ -31,7 +31,7 @@ public class MessageHandler {
         return returnList;
     }
 
-    // BEHÖVER PROVKÖRAS //
+    // BEHÖVER PROVKÖRAS BABE//
     private void sortList(List<MessageObject> oldList) {
         for (int i = 0; i < oldList.size(); i++){
             MessageObject tempMessage = oldList.get(i);
