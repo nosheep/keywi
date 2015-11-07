@@ -28,13 +28,14 @@ public class MessageHandler {
         List<SMSObject> returnList = new ArrayList<>(getInboxSmsList());
         returnList.addAll(getSentSmsList());
 
+        sortList(returnList);
         return returnList;
     }
 
     // BEHÖVER PROVKÖRAS BABE//
-    private void sortList(List<MessageObject> oldList) {
+    private void sortList(List<SMSObject> oldList) {
         for (int i = 0; i < oldList.size(); i++){
-            MessageObject tempMessage = oldList.get(i);
+            SMSObject tempMessage = oldList.get(i);
             while (i > 0 && (oldList.get(i-1).getId() < tempMessage.getId())){
                 oldList.set(i, oldList.get(i-1));
                 i--;
