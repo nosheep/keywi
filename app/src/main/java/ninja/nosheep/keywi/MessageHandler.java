@@ -29,20 +29,105 @@ public class MessageHandler {
         returnList.addAll(getSentSmsList());
 
         sortList(returnList);
+        //mergeSort(returnList);
+        //sort(returnList);
         return returnList;
     }
 
-    // BEHÖVER PROVKÖRAS BABE//
+    // INSERT SORT BEGIN //
     private void sortList(List<SMSObject> oldList) {
         for (int i = 0; i < oldList.size(); i++){
             SMSObject tempMessage = oldList.get(i);
-            while (i > 0 && (oldList.get(i-1).getId() < tempMessage.getId())){
-                oldList.set(i, oldList.get(i-1));
-                i--;
+            int ix = i;
+            while (ix > 0 && (oldList.get(ix-1).getId() < tempMessage.getId())){
+                oldList.set(ix, oldList.get(ix-1));
+                ix--;
             }
-            oldList.set(i, tempMessage);
+            oldList.set(ix, tempMessage);
         }
     }
+    // INSERT SORT END //
+
+    // QUICK SORT BEGIN //
+    private void sort(List<SMSObject> list){
+        if(list == null || list.size() == 0)
+            return;
+
+        quickSort(0, list.size() - 1, list);
+    }
+
+    private void quickSort(int low, int high, List<SMSObject> list){
+        int i = low, j = high;
+
+        if(low >= high)
+            return;
+
+        while(i <= j){
+            while(list.get(i).getId() > list.get(low + (high - low)/2).getId())
+                i++;
+
+            while(list.get(j).getId() < list.get(low + (high - low)/2).getId())
+                j--;
+
+            if(i <= j){
+                swap(i, j, list);
+                i++;
+                j--;
+            }
+        }
+        if(low < j)
+            quickSort(low, j, list);
+        if(high > i)
+            quickSort(i, high, list);
+    }
+    private void swap(int i, int j, List<SMSObject> list){
+        SMSObject temp = list.get(i);
+        list.set(i, list.get(j));
+        list.set(j, temp);
+    }
+    // QUICK SORT END //
+
+    // MERGE SORT BEGIN //
+    private void merge(List<SMSObject> first, List<SMSObject> second, List<SMSObject> list){
+        int firstIndex = 0,
+            secondIndex = 0,
+            i = 0;
+
+        while(firstIndex < first.size() && secondIndex < second.size()){
+            if(first.get(firstIndex).getId() < second.get(secondIndex).getId()){
+                list.set(i, first.get(firstIndex));
+                firstIndex++;
+            }
+            else{
+                list.set(i, second.get(secondIndex));
+                secondIndex++;
+            }
+            i++;
+        }
+        first.addAll(list);
+        second.addAll(list);
+        //System.arraycopy(first, firstIndex, list, i, first.size() - firstIndex);
+        //System.arraycopy(second, secondIndex, list, i, second.size() - secondIndex);
+    }
+
+    private List<SMSObject> mergeSort(List<SMSObject> list){
+        if(list.size() <= 1)
+            return list;
+
+        List<SMSObject> first = new ArrayList<>(list.size() / 2);
+        List<SMSObject> second = new ArrayList<>(list.size() - first.size());
+        //System.arraycopy(list, 0, first, 0, first.size());
+        //System.arraycopy(list, first.size(), second, 0, second.size());
+        list.addAll(first);
+        list.addAll(second);
+
+        mergeSort(first);
+        mergeSort(second);
+
+        merge(first, second, list);
+        return list;
+    }
+    // MERGE SORT END //
 
     public List<SMSObject> getInboxSmsList() {
         List<SMSObject> textMsgList = new ArrayList<>();
