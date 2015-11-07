@@ -31,22 +31,11 @@ public class MessageHandler {
         return returnList;
     }
 
-    /*
-       PROVKÖR GÄRNA!!!!!!! xD
-    ** Ändrade funktionen till void, en lista kommer in som referensanrop och ej kopia,
-    * därav ändras den riktiga versionen och en return behövs ej **
-    *
-     * Jag loopar på samma index, den kommer inte byta plats på fel saker,
-      * men den kommer jämföra allt varje gång (notera ej bubbleSort komplexitet! LOVAR!).
-      * Det är en fungerande insertSort men för att
-      * få en 100% korrekt och lite lite snabbare sortering skulle jag egentligen stoppa in
-      * ytterligare ett index, kommer dock ej ihåg exakta lösningen på detta.
-      * Kommer återkomma och förbättra om den skulle vara långsam //Razz
-    */
+    // BEHÖVER PROVKÖRAS //
     private void sortList(List<MessageObject> oldList) {
         for (int i = 0; i < oldList.size(); i++){
             MessageObject tempMessage = oldList.get(i);
-            while (i > 0 && (oldList.get(i-1).getId() > tempMessage.getId())){
+            while (i > 0 && (oldList.get(i-1).getId() < tempMessage.getId())){
                 oldList.set(i, oldList.get(i-1));
                 i--;
             }
