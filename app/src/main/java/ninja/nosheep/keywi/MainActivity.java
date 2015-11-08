@@ -43,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     TextView testReadedTextView;
     @Bind(R.id.test_id_textview)
     TextView testIdTextView;
+    @Bind(R.id.test_folder_textview)
+    TextView folderTextView;
     @Bind(R.id.content_layout)
     RelativeLayout contentLayout;
 
@@ -85,8 +87,9 @@ public class MainActivity extends AppCompatActivity {
                     testAddressTextView.setText(textMsgList.get(smsCounter).getAddress());
                     testBodyTextView.setText(textMsgList.get(smsCounter).getMessageBody());
                     testDateTextView.setText(textMsgList.get(smsCounter).getTime());
-                    testReadedTextView.setText(Boolean.toString(textMsgList.get(smsCounter).isReaded()));
+                    testReadedTextView. setText(Boolean.toString(textMsgList.get(smsCounter).isReaded()));
                     testIdTextView.setText(textMsgList.get(smsCounter).getId() + "");
+                    folderTextView.setText(textMsgList.get(smsCounter).getFolder());
                     incCounter();
                 } else {
                     Snackbar.make(v,

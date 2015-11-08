@@ -42,4 +42,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="" />
+    <TextView
+        android:id="@+id/test_folder_textview"
+        android:layout_below="@id/test_id_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="" />
 </RelativeLayout>
