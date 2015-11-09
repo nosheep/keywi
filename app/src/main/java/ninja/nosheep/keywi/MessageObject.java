@@ -1,7 +1,7 @@
 package ninja.nosheep.keywi;
 
 /**
- * Class-info
+ * Class that will be used for SMS and MMS objects.
  *
  * @author David Söderberg
  * @since 2015-11-06

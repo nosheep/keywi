@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Text om metoden
+ * All handling of users messages belongs here.
  *
  * @author David Söderberg
  * @since 2015-11-06

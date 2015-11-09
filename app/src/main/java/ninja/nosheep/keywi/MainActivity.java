@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,17 +84,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+//                Test to DateFormat the time.
                 if (textMsgList.size() != 0) {
                     testAddressTextView.setText(textMsgList.get(smsCounter).getAddress());
                     testBodyTextView.setText(textMsgList.get(smsCounter).getMessageBody());
-                    testDateTextView.setText(textMsgList.get(smsCounter).getTime());
+                    testDateTextView.setText(DateFormat.getInstance().format(textMsgList.get(smsCounter).getTime()));
                     testReadedTextView. setText(Boolean.toString(textMsgList.get(smsCounter).isReaded()));
                     testIdTextView.setText(textMsgList.get(smsCounter).getId() + "");
                     folderTextView.setText(textMsgList.get(smsCounter).getFolder());
                     incCounter();
                 } else {
                     Snackbar.make(v,
-                            "No messages founded",
+                            R.string.no_messages,
                             Snackbar.LENGTH_LONG)
                             .show();
                 }
