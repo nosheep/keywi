@@ -116,6 +116,32 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TagHandler.MAIN_TAG, "Took " + (System.currentTimeMillis() - currentTime) + "ms to read SMS.");
             }
         });
+        showContacts(contactHandler);
+    }
+
+    /*  DETTA KAN TAS BORT, BARA KOLLA OM DU FÖRSTÅR VAD JAG FÖRSÖKER GÖRA
+        DAVID KOLLA GÄRNA PÅ DETTA, satte '\n' tillfälligt för jag fattade som att den bara håller en string?
+       bara tillfällig lösning för att prova, försöker skriva ut alla namn.
+        Självklart vill man ju kolla så man fått sms eller skickat sms till kontakten men har ej lärt mig hela koden än!*/
+    public void showContacts(ContactHandler cH){
+        String[] contacts = new String[100];
+        int index = 0;
+        for(SMSObject SO : textMsgList){
+            boolean add = true;
+            for(int i = 0; i < contacts.length; i++){
+                if(contacts[i].equals(cH.getContactNameFromNumber(SO.getAddress()))) {
+                    add = false;
+                    break;
+                }
+            }
+            if(add){
+                contacts[index] = cH.getContactNameFromNumber(SO.getAddress());
+                index++;
+            }
+        }
+        for(int i = 0; i < contacts.length; i++){
+            testAddressTextView.setText(contacts[i]+'\n');
+        }
     }
 
     @Override
