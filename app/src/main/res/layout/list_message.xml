@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/message_list_view"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/message_address_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:gravity="start|top"
+        android:paddingTop="20dp"
+        android:paddingBottom="4dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+
+        android:textColor="@color/textColorPrimary"
+        android:textSize="16sp"
+        android:text="Example Contact"/>
+    <TextView
+        android:id="@+id/message_folder_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+
+        android:paddingTop="20dp"
+        android:paddingEnd="16dp"
+
+        android:textColor="@color/textColorSecondary"
+        android:textSize="16sp"
+        android:text="Folder"
+        />
+
+    <TextView
+        android:id="@+id/message_body_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/message_address_text_view"
+
+        android:gravity="start|top"
+        android:paddingTop="4dp"
+        android:paddingBottom="20dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+
+        android:text="Example message"
+        android:textColor="@color/textColorSecondary"
+        android:textSize="14sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/textColorDivider"
+        android:layout_below="@id/message_body_text_view"/>
+
+</RelativeLayout>

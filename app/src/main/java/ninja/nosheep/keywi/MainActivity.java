@@ -9,16 +9,15 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -31,27 +30,13 @@ import butterknife.ButterKnife;
  * @since 2015-10-26
  */
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MessageAdapter.AdapterCallback {
 
-    @Bind(R.id.test_address_textview)
-    TextView testAddressTextView;
-    @Bind(R.id.test_body_textview)
-    TextView testBodyTextView;
-    @Bind(R.id.test_date_textview)
-    TextView testDateTextView;
-    @Bind(R.id.test_isreaded_textview)
-    TextView testReadedTextView;
-    @Bind(R.id.test_id_textview)
-    TextView testIdTextView;
-    @Bind(R.id.test_folder_textview)
-    TextView folderTextView;
-    @Bind(R.id.content_layout)
-    RelativeLayout contentLayout;
+    @Bind(R.id.content_main_recyclerview)
+    RecyclerView messageRecyclerView;
 
-    private List<SMSObject> textMsgList = new ArrayList<>();
+    private ArrayList<SMSObject> textMsgList = new ArrayList<>();
     private MessageHandler messageHandler;
-    //    Temporary code
-    private int smsCounter = 0;
 
     private final static int REQUEST_CODE_PERMISSION_READ_SMS = 100;
     private final static int REQUEST_CODE_PERMISSION_READ_CONTACTS = 101;
@@ -67,81 +52,25 @@ public class MainActivity extends AppCompatActivity {
 
         messageHandler = new MessageHandler(this);
 
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_SMS)
-                != PackageManager.PERMISSION_GRANTED) {
+        getPermission();
 
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_SMS},
-                    REQUEST_CODE_PERMISSION_READ_SMS);
+        messageRecyclerView.setHasFixedSize(true);
+        RecyclerView.LayoutManager messageLayoutManager = new LinearLayoutManager(this);
+        messageRecyclerView.setLayoutManager(messageLayoutManager);
 
-        } else {
-            PermissionHandler.setOkToReadSMS(true);
-            textMsgList = messageHandler.getSmsList();
-        }
-
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_CONTACTS)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_CONTACTS},
-                    REQUEST_CODE_PERMISSION_READ_CONTACTS);
-
-        } else {
-            PermissionHandler.setOkToReadContacts(true);
-        }
-        final ContactHandler contactHandler = new ContactHandler(this.getContentResolver());
+        RecyclerView.Adapter messageAdapter = new MessageAdapter(textMsgList);
+        messageRecyclerView.setAdapter(messageAdapter);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                long currentTime = System.currentTimeMillis();
-                if (textMsgList.size() != 0) {
-                    testAddressTextView.setText(contactHandler.getContactNameFromNumber(textMsgList.get(smsCounter).getAddress()));
-                    testBodyTextView.setText(textMsgList.get(smsCounter).getMessageBody());
-                    testDateTextView.setText(TimeHandler.getTimeFromString(textMsgList.get(smsCounter).getTime()));
-                    testReadedTextView.setText(Boolean.toString(textMsgList.get(smsCounter).isReaded()));
-                    testIdTextView.setText(textMsgList.get(smsCounter).getId() + "");
-                    folderTextView.setText(textMsgList.get(smsCounter).getFolder());
-                    incCounter();
-                } else {
-                    Snackbar.make(v,
-                            R.string.no_messages,
-                            Snackbar.LENGTH_LONG)
-                            .show();
-                }
-                Log.d(TagHandler.MAIN_TAG, "Took " + (System.currentTimeMillis() - currentTime) + "ms to read SMS.");
+                Snackbar.make(v,
+                        "Keep it real.",
+                        Snackbar.LENGTH_LONG)
+                        .show();
             }
         });
-        showContacts(contactHandler);
-    }
-
-    /*  DETTA KAN TAS BORT, BARA KOLLA OM DU FÖRSTÅR VAD JAG FÖRSÖKER GÖRA
-        DAVID KOLLA GÄRNA PÅ DETTA, satte '\n' tillfälligt för jag fattade som att den bara håller en string?
-       bara tillfällig lösning för att prova, försöker skriva ut alla namn.
-        Självklart vill man ju kolla så man fått sms eller skickat sms till kontakten men har ej lärt mig hela koden än!*/
-    public void showContacts(ContactHandler cH){
-        String[] contacts = new String[100];
-        int index = 0;
-        for(SMSObject SO : textMsgList){
-            boolean add = true;
-            for(int i = 0; i < contacts.length; i++){
-                if(contacts[i].equals(cH.getContactNameFromNumber(SO.getAddress()))) {
-                    add = false;
-                    break;
-                }
-            }
-            if(add){
-                contacts[index] = cH.getContactNameFromNumber(SO.getAddress());
-                index++;
-            }
-        }
-        for(int i = 0; i < contacts.length; i++){
-            testAddressTextView.setText(contacts[i]+'\n');
-        }
     }
 
     @Override
@@ -197,11 +126,38 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void incCounter() {
-        if (smsCounter < textMsgList.size()) {
-            smsCounter++;
+    private void getPermission() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_SMS},
+                    REQUEST_CODE_PERMISSION_READ_SMS);
+
         } else {
-            smsCounter = 0;
+            PermissionHandler.setOkToReadSMS(true);
+            textMsgList = messageHandler.getSmsList();
         }
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_CONTACTS},
+                    REQUEST_CODE_PERMISSION_READ_CONTACTS);
+
+        } else {
+            PermissionHandler.setOkToReadContacts(true);
+        }
+    }
+
+    @Override
+    public void onMessageSelected(SMSObject smsObject) {
+        Snackbar.make(messageRecyclerView,
+                "Message id: " + smsObject.getId(),
+                Snackbar.LENGTH_LONG)
+                .show();
     }
 }

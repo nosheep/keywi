@@ -25,14 +25,14 @@ public class MessageHandler {
         this.callingActivity = callingActivity;
     }
 
-    public List<SMSObject> getSmsList() {
+    public ArrayList<SMSObject> getSmsList() {
         return combineTwoSortedLists(getInboxSmsList(), getSentSmsList());
     }
 
-    private List<SMSObject> combineTwoSortedLists(List<SMSObject> inboxList, List<SMSObject> sentList) {
+    private ArrayList<SMSObject> combineTwoSortedLists(ArrayList<SMSObject> inboxList, ArrayList<SMSObject> sentList) {
         long startTime = System.currentTimeMillis();
         Log.d(TagHandler.MAIN_TAG, "Sort started.");
-        List<SMSObject> returnList = new ArrayList<>();
+        ArrayList<SMSObject> returnList = new ArrayList<>();
         int i = 0, j = 0;
         while (i < inboxList.size() && j < sentList.size()) {
 
@@ -54,8 +54,8 @@ public class MessageHandler {
         return returnList;
     }
 
-    public List<SMSObject> getInboxSmsList() {
-        List<SMSObject> textMsgList = new ArrayList<>();
+    public ArrayList<SMSObject> getInboxSmsList() {
+        ArrayList<SMSObject> textMsgList = new ArrayList<>();
 
         ContentResolver contentResolver = callingActivity.getContentResolver();
 
@@ -86,8 +86,8 @@ public class MessageHandler {
         return textMsgList;
     }
 
-    public List<SMSObject> getSentSmsList() {
-        List<SMSObject> textMsgList = new ArrayList<>();
+    public ArrayList<SMSObject> getSentSmsList() {
+        ArrayList<SMSObject> textMsgList = new ArrayList<>();
 
         ContentResolver contentResolver = callingActivity.getContentResolver();
 
