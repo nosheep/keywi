@@ -3,9 +3,12 @@
     package="ninja.nosheep.keywi" >
 
     <uses-permission-sdk-23 android:name="android.permission.READ_SMS" />
+    <uses-permission-sdk-23 android:name="android.permission.READ_CONTACTS" />
 
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
+
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
 
     <application
         android:allowBackup="true"

@@ -26,10 +26,10 @@ public class MessageHandler {
     }
 
     public List<SMSObject> getSmsList() {
-        return sortList(getInboxSmsList(), getSentSmsList());
+        return combineTwoSortedLists(getInboxSmsList(), getSentSmsList());
     }
 
-    private List<SMSObject> sortList(List<SMSObject> inboxList, List<SMSObject> sentList) {
+    private List<SMSObject> combineTwoSortedLists(List<SMSObject> inboxList, List<SMSObject> sentList) {
         long startTime = System.currentTimeMillis();
         Log.d(TagHandler.MAIN_TAG, "Sort started.");
         List<SMSObject> returnList = new ArrayList<>();

@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private int smsCounter = 0;
 
     private final static int REQUEST_CODE_PERMISSION_READ_SMS = 100;
+    private final static int REQUEST_CODE_PERMISSION_READ_CONTACTS = 101;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,20 +76,34 @@ public class MainActivity extends AppCompatActivity {
                     REQUEST_CODE_PERMISSION_READ_SMS);
 
         } else {
+            PermissionHandler.setOkToReadSMS(true);
             textMsgList = messageHandler.getSmsList();
         }
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_CONTACTS},
+                    REQUEST_CODE_PERMISSION_READ_CONTACTS);
+
+        } else {
+            PermissionHandler.setOkToReadContacts(true);
+        }
+        final ContactHandler contactHandler = new ContactHandler(this.getContentResolver());
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-//                Test to DateFormat the time.
+                long currentTime = System.currentTimeMillis();
                 if (textMsgList.size() != 0) {
-                    testAddressTextView.setText(textMsgList.get(smsCounter).getAddress());
+                    testAddressTextView.setText(contactHandler.getContactNameFromNumber(textMsgList.get(smsCounter).getAddress()));
                     testBodyTextView.setText(textMsgList.get(smsCounter).getMessageBody());
                     testDateTextView.setText(TimeHandler.getTimeFromString(textMsgList.get(smsCounter).getTime()));
-                    testReadedTextView. setText(Boolean.toString(textMsgList.get(smsCounter).isReaded()));
+                    testReadedTextView.setText(Boolean.toString(textMsgList.get(smsCounter).isReaded()));
                     testIdTextView.setText(textMsgList.get(smsCounter).getId() + "");
                     folderTextView.setText(textMsgList.get(smsCounter).getFolder());
                     incCounter();
@@ -98,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
                             Snackbar.LENGTH_LONG)
                             .show();
                 }
+                Log.d(TagHandler.MAIN_TAG, "Took " + (System.currentTimeMillis() - currentTime) + "ms to read SMS.");
             }
         });
     }
@@ -134,7 +150,18 @@ public class MainActivity extends AppCompatActivity {
                     if (ContextCompat.checkSelfPermission(getApplicationContext(),
                             Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED) {
                         Log.d(TagHandler.MAIN_TAG, "Read SMS permission GRANTED!");
+                        PermissionHandler.setOkToReadSMS(true);
                         textMsgList = messageHandler.getSmsList();
+                    }
+                }
+                break;
+            case REQUEST_CODE_PERMISSION_READ_CONTACTS:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (ContextCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+                        Log.d(TagHandler.MAIN_TAG, "Read contacs permission GRANTED!");
+                        PermissionHandler.setOkToReadContacts(true);
                     }
                 }
                 break;
