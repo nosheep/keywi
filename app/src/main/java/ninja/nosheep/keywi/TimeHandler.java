@@ -1,9 +1,9 @@
 package ninja.nosheep.keywi;
 
-import android.util.Log;
-
 import java.text.DateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  * Handles all information about time and date.
@@ -17,9 +17,17 @@ public class TimeHandler {
     }
 
     public static String getTimeFromString(String ms) {
+        Calendar nowCalendar = new GregorianCalendar();
+        Date trialTime = new Date();
+        nowCalendar.setTime(trialTime);
+
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(Long.parseLong(ms));
-        Log.d(TagHandler.MAIN_TAG, "Day: " + calendar.get(Calendar.DAY_OF_MONTH));
+        calendar.compareTo(nowCalendar);
+
+        /**
+         *  TODO: Configure "today", "yesterday", etc instead of date.
+         */
         return DateFormat.getInstance().format(Long.parseLong(ms));
     }
 
