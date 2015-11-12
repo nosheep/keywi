@@ -6,7 +6,7 @@ package ninja.nosheep.keywi;
  * @author David Söderberg
  * @since 2015-11-06
  */
-public class MessageObject {
+public abstract class MessageObject {
     private long id;
     private String address;
     private String messageBody;

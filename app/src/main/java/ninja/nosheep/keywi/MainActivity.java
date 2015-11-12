@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
 
     private ArrayList<SMSObject> textMsgList = new ArrayList<>();
     private MessageHandler messageHandler;
+    RecyclerView.Adapter messageAdapter;
 
     private final static int REQUEST_CODE_PERMISSION_READ_SMS = 100;
     private final static int REQUEST_CODE_PERMISSION_READ_CONTACTS = 101;
@@ -51,15 +52,6 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
         setSupportActionBar(toolbar);
 
         messageHandler = new MessageHandler(this);
-
-        getPermission();
-
-        messageRecyclerView.setHasFixedSize(true);
-        RecyclerView.LayoutManager messageLayoutManager = new LinearLayoutManager(this);
-        messageRecyclerView.setLayoutManager(messageLayoutManager);
-
-        RecyclerView.Adapter messageAdapter = new MessageAdapter(textMsgList);
-        messageRecyclerView.setAdapter(messageAdapter);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -126,7 +118,33 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
         }
     }
 
-    private void getPermission() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (PermissionHandler.isOkToReadSMS()) {
+            textMsgList = messageHandler.getSmsList();
+        }
+
+        messageRecyclerView.setHasFixedSize(true);
+        RecyclerView.LayoutManager messageLayoutManager = new LinearLayoutManager(this);
+        messageRecyclerView.setLayoutManager(messageLayoutManager);
+
+        messageAdapter = new MessageAdapter(textMsgList);
+        messageRecyclerView.setAdapter(messageAdapter);
+
+        messageAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        askForPermissionOnStart();
+    }
+
+    private void askForPermissionOnStart() {
+        Log.d(TagHandler.MAIN_TAG, "Permission check!");
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_SMS)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -137,7 +155,6 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
 
         } else {
             PermissionHandler.setOkToReadSMS(true);
-            textMsgList = messageHandler.getSmsList();
         }
 
         if (ContextCompat.checkSelfPermission(this,
