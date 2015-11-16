@@ -3,7 +3,6 @@ package ninja.nosheep.keywi;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.provider.ContactsContract;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +36,11 @@ public class ContactHandler {
                 String phoneNumber = phones.getString(phones.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER));
 
                 if (phoneNumber != null && phoneNumber.equals(number)) {
-                    Log.d(TagHandler.MAIN_TAG, "SMS from: "
-                            + phones.getString(phones.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
-                            + ", number: " + phoneNumber
-                            + ", ID: " + phones.getString(phones.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.CONTACT_ID)));
+//                    Log.d(TagHandler.MAIN_TAG, "SMS from: "
+//                            + phones.getString(phones.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
+//                            + ", number: " + phoneNumber
+//                            + ", ID: " + phones.getString(phones.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.CONTACT_ID)));
+
                     addOftenUsedContact(new ContactObject(phones.getString(phones.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)),
                             phones.getInt(phones.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.CONTACT_ID)),
                             phoneNumber));

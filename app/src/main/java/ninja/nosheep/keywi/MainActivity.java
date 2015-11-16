@@ -51,7 +51,20 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
         toolbar.setTitle(getString(R.string.app_name));
         setSupportActionBar(toolbar);
 
+        askForPermissionOnStart();
+
         messageHandler = new MessageHandler(this);
+
+        if (PermissionHandler.isOkToReadSMS()) {
+            textMsgList = messageHandler.getSmsList();
+        }
+
+        messageRecyclerView.setHasFixedSize(true);
+        RecyclerView.LayoutManager messageLayoutManager = new LinearLayoutManager(this);
+        messageRecyclerView.setLayoutManager(messageLayoutManager);
+
+        messageAdapter = new MessageAdapter(textMsgList);
+        messageRecyclerView.setAdapter(messageAdapter);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -121,17 +134,6 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
     @Override
     protected void onResume() {
         super.onResume();
-
-        if (PermissionHandler.isOkToReadSMS()) {
-            textMsgList = messageHandler.getSmsList();
-        }
-
-        messageRecyclerView.setHasFixedSize(true);
-        RecyclerView.LayoutManager messageLayoutManager = new LinearLayoutManager(this);
-        messageRecyclerView.setLayoutManager(messageLayoutManager);
-
-        messageAdapter = new MessageAdapter(textMsgList);
-        messageRecyclerView.setAdapter(messageAdapter);
 
         messageAdapter.notifyDataSetChanged();
     }

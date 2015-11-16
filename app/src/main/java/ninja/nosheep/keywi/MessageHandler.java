@@ -25,6 +25,27 @@ public class MessageHandler {
         this.callingActivity = callingActivity;
     }
 
+    public ArrayList<SMSObject> getMainActivityList() {
+        ArrayList<SMSObject> latestList = new ArrayList<>();
+
+        for (SMSObject sms : this.getSmsList()) {
+            if (!containsAddress(latestList, sms.getAddress())) {
+                latestList.add(sms);
+            }
+        }
+
+        return latestList;
+    }
+
+    private boolean containsAddress(ArrayList<SMSObject> list, String address) {
+        for (SMSObject sms : list) {
+            if (sms.getAddress().equals(address)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public ArrayList<SMSObject> getSmsList() {
         return combineTwoSortedLists(getInboxSmsList(), getSentSmsList());
     }
