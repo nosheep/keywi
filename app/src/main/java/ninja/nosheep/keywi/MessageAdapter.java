@@ -65,8 +65,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         bodyTextView.setText(messageList.get(position).getMessageBody());
 
         TextView folderTextView = (TextView) holder.itemView.findViewById(R.id.message_folder_text_view);
-        folderTextView.setText(messageList.get(position).getFolder().substring(0, 1).toUpperCase()
-                + messageList.get(position).getFolder().substring(1));
+        folderTextView.setText(messageList.get(position).getFolder().toString());
 
         messageListLayout.setOnClickListener(new View.OnClickListener() {
             @Override

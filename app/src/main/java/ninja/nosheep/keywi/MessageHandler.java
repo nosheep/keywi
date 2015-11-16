@@ -7,7 +7,7 @@ import android.provider.Telephony;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Hashtable;
 import java.util.Objects;
 
 /**
@@ -19,31 +19,17 @@ import java.util.Objects;
 public class MessageHandler {
 
     private Activity callingActivity;
-    private List<MessageObject> messageList;
+
+    private ContactHandler contactHandler;
+
+    private Hashtable<String, Conversation> conversationList = new Hashtable<>();
+    private Hashtable<String, String> contactList = new Hashtable<>();
+
+    private static final int INIT_CONVERSATION_COUNT = 20;
 
     public MessageHandler(Activity callingActivity) {
         this.callingActivity = callingActivity;
-    }
-
-    public ArrayList<SMSObject> getMainActivityList() {
-        ArrayList<SMSObject> latestList = new ArrayList<>();
-
-        for (SMSObject sms : this.getSmsList()) {
-            if (!containsAddress(latestList, sms.getAddress())) {
-                latestList.add(sms);
-            }
-        }
-
-        return latestList;
-    }
-
-    private boolean containsAddress(ArrayList<SMSObject> list, String address) {
-        for (SMSObject sms : list) {
-            if (sms.getAddress().equals(address)) {
-                return true;
-            }
-        }
-        return false;
+        contactHandler = new ContactHandler(callingActivity.getContentResolver());
     }
 
     public ArrayList<SMSObject> getSmsList() {
@@ -90,7 +76,7 @@ public class MessageHandler {
             int totalSms = cursor.getCount();
             for (int i = 0; i < totalSms; i++) {
                 boolean isReaded = Objects.equals(cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.Inbox.READ)), "1");
-                String folder = "inbox";
+                MessageObject.MessageFolder folder = MessageObject.MessageFolder.INBOX;
 
                 SMSObject smsObject = new SMSObject(cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.Inbox._ID)),
                         cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.Inbox.ADDRESS)),
@@ -122,7 +108,7 @@ public class MessageHandler {
             int totalSms = cursor.getCount();
             for (int i = 0; i < totalSms; i++) {
                 boolean isReaded = Objects.equals(cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.Sent.READ)), "1");
-                String folder = "sent";
+                MessageObject.MessageFolder folder = MessageObject.MessageFolder.SENT;
 
                 SMSObject smsObject = new SMSObject(cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.Sent._ID)),
                         cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.Sent.ADDRESS)),
@@ -137,5 +123,83 @@ public class MessageHandler {
         }
 
         return textMsgList;
+    }
+
+    public void createConversationList() {
+        long creatingTime = System.currentTimeMillis();
+
+        String[] projection = {Telephony.Sms.ADDRESS,
+            Telephony.Sms.BODY,
+            Telephony.Sms.DATE,
+            Telephony.Sms.READ,
+            Telephony.Sms.TYPE};
+
+        ContentResolver contentResolver = callingActivity.getContentResolver();
+        Cursor messageCursor = contentResolver.query(Telephony.Sms.CONTENT_URI, projection, null, null, null);
+        assert messageCursor != null;
+        int idIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms._ID);
+        int addressIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS);
+        int bodyIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.BODY);
+        int timeIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.DATE);
+        int readIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.READ);
+        int folderIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.TYPE);
+        String address;
+
+//        TODO: Create a contactList from contactHandler. Save as hashTable (in contactList)
+
+        if (!messageCursor.moveToNext()) {
+            return;
+        }
+
+        do {
+            address = messageCursor.getString(addressIndex);
+            if (address == null) {
+                Log.d(TagHandler.MAIN_TAG, "Draft found. Message body: " + messageCursor.getString(bodyIndex));
+                continue;
+            }
+
+            MessageObject.MessageFolder folder;
+            if (messageCursor.getString(folderIndex).contains("1")) {
+                folder = MessageObject.MessageFolder.INBOX;
+            }
+            else {
+                folder = MessageObject.MessageFolder.SENT;
+            }
+
+            boolean isReaded = Objects.equals(messageCursor.getString(readIndex), "1");
+            Conversation conversation;
+
+            if (!conversationList.containsKey(address)) {
+                conversation = new Conversation(address, isReaded);
+            }
+            else {
+                conversation = conversationList.get(address);
+            }
+
+//                TODO: Unnecessarily to store address in SMS
+            conversation.addMessage(new SMSObject(messageCursor.getLong(idIndex),
+                    messageCursor.getString(addressIndex),
+                    messageCursor.getString(bodyIndex),
+                    folder,
+                    messageCursor.getString(timeIndex),
+                    isReaded));
+
+            conversationList.put(address, conversation);
+
+            if (conversation.getDisplayAddress() == null) {
+                conversation.setDisplayAddress(contactHandler.getContactNameFromNumber(address));
+            }
+            if (conversationList.size() >= 20) break;
+        }
+        while (messageCursor.moveToNext());
+
+        messageCursor.close();
+        Log.d(TagHandler.MAIN_TAG, "Wrote " + conversationList.size() + " conversations in " + (System.currentTimeMillis() - creatingTime) + "ms.");
+//        TODO: Create a SMSLoading task with Async, send the messageCursor.getPosition() as start position
+
+    }
+
+    public Hashtable<String, Conversation> getConversationList() {
+        return conversationList;
     }
 }

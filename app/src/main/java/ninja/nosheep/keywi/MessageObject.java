@@ -11,10 +11,14 @@ public abstract class MessageObject {
     private String address;
     private String messageBody;
     private String time;
-    private String folder;
+    private MessageFolder folder;
     private boolean isReaded;
 
-    public MessageObject(long id, String address, String messageBody, String folder, String time, boolean isReaded) {
+    public enum MessageFolder {
+        INBOX, SENT
+    }
+
+    public MessageObject(long id, String address, String messageBody, MessageFolder folder, String time, boolean isReaded) {
         this.address = address;
         this.folder = folder;
         this.id = id;
@@ -31,7 +35,7 @@ public abstract class MessageObject {
         return address;
     }
 
-    public String getFolder() {
+    public MessageFolder getFolder() {
         return folder;
     }
 

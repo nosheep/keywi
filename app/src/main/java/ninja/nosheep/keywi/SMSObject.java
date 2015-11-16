@@ -8,7 +8,7 @@ package ninja.nosheep.keywi;
  */
 public class SMSObject extends MessageObject {
 
-    public SMSObject(long id, String address, String messageBody, String folder, String time, boolean isReaded) {
+    public SMSObject(long id, String address, String messageBody, MessageFolder folder, String time, boolean isReaded) {
         super(id, address, messageBody, folder, time, isReaded);
     }
 }
