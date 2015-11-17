@@ -25,7 +25,7 @@ public class Conversation {
 
     public void addMessage(SMSObject message) {
         messageList.add(message);
-        if (message.getFolder().equals("inbox")) {
+        if (message.getFolder() == MessageObject.MessageFolder.INBOX) {
             inboxCount++;
         }
         else {

@@ -135,7 +135,11 @@ public class MessageHandler {
             Telephony.Sms.TYPE};
 
         ContentResolver contentResolver = callingActivity.getContentResolver();
-        Cursor messageCursor = contentResolver.query(Telephony.Sms.CONTENT_URI, projection, null, null, null);
+        Cursor messageCursor = contentResolver.query(Telephony.Sms.CONTENT_URI,
+                projection,
+                null,
+                null,
+                Telephony.Sms.DEFAULT_SORT_ORDER);
         assert messageCursor != null;
         int idIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms._ID);
         int addressIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS);
@@ -176,7 +180,7 @@ public class MessageHandler {
                 conversation = conversationList.get(address);
             }
 
-//                TODO: Unnecessarily to store address in SMS
+//                TODO: Unnecessarily to store address in SMS?
             conversation.addMessage(new SMSObject(messageCursor.getLong(idIndex),
                     messageCursor.getString(addressIndex),
                     messageCursor.getString(bodyIndex),
