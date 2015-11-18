@@ -46,12 +46,15 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        long startTime = System.currentTimeMillis();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(getString(R.string.app_name));
         setSupportActionBar(toolbar);
+
+        Log.d(TagHandler.MAIN_TAG, "Creating toolbar and stuff in " + (System.currentTimeMillis() - startTime) + "ms.");
 
         askForPermissionOnStart();
 
@@ -86,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
                         .show();
             }
         });
+
+        Log.d(TagHandler.MAIN_TAG, "Total onCreateTime: " + (System.currentTimeMillis() - startTime) + "ms");
     }
 
     @Override
