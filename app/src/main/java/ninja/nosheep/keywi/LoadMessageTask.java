@@ -2,50 +2,51 @@ package ninja.nosheep.keywi;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.provider.Telephony;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Objects;
 
 /**
- * All handling of users messages belongs here.
+ * Task for loading rest of the messages.
  *
  * @author David Söderberg
- * @since 2015-11-06
+ * @since 2015-11-18
  */
-public class MessageHandler {
-
-    private MainActivity callingActivity;
-
+public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
+    private MainActivity activity;
+    private Hashtable<String, String> contactList;
+    private Hashtable<String, Conversation> conversationList;
+    private ArrayList<Conversation> messageList = new ArrayList<>();
     private ContactHandler contactHandler;
 
-    private Hashtable<String, Conversation> conversationList = new Hashtable<>();
-    private Hashtable<String, String> contactList = new Hashtable<>();
-
-    private static final int INIT_CONVERSATION_COUNT = 20;
-
-    public MessageHandler(MainActivity callingActivity) {
-        this.callingActivity = callingActivity;
-        contactHandler = new ContactHandler(callingActivity.getContentResolver());
+    public LoadMessageTask(MainActivity activity, Hashtable<String, String> contactList, Hashtable<String, Conversation> conversationList) {
+        this.activity = activity;
+        this.contactList = contactList;
+        this.conversationList = (Hashtable<String, Conversation>) conversationList.clone();
+        contactHandler = new ContactHandler(activity.getContentResolver());
     }
 
-    public void createConversationList() {
-        long creatingTime = System.currentTimeMillis();
+    @Override
+    protected Void doInBackground(Integer... params) {
+        long startTime = System.currentTimeMillis();
+        int startIndex = params[0];
 
         String[] projection = {Telephony.Sms.ADDRESS,
-            Telephony.Sms.BODY,
-            Telephony.Sms.DATE,
-            Telephony.Sms.READ,
-            Telephony.Sms.TYPE};
-
-        ContentResolver contentResolver = callingActivity.getContentResolver();
+                Telephony.Sms.BODY,
+                Telephony.Sms.DATE,
+                Telephony.Sms.READ,
+                Telephony.Sms.TYPE};
+        ContentResolver contentResolver = activity.getContentResolver();
         Cursor messageCursor = contentResolver.query(Telephony.Sms.CONTENT_URI,
                 projection,
                 null,
                 null,
                 Telephony.Sms.DEFAULT_SORT_ORDER);
-        assert messageCursor != null;
+
         int addressIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS);
         int bodyIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.BODY);
         int timeIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.DATE);
@@ -53,12 +54,9 @@ public class MessageHandler {
         int folderIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.TYPE);
         String address;
 
-//        TODO: Create a contactList from contactHandler. Save as hashTable (in contactList)
-
-        if (!messageCursor.moveToNext()) {
-            return;
+        if (!messageCursor.moveToPosition(startIndex)) {
+            return null;
         }
-
         do {
             address = messageCursor.getString(addressIndex);
             if (address == null) {
@@ -88,7 +86,7 @@ public class MessageHandler {
                         isReaded));
 
                 conversationList.put(address, conversation);
-                callingActivity.addConversationToAdapter(conversation);
+                messageList.add(conversation);
             }
             else {
                 conversation = conversationList.get(address);
@@ -103,20 +101,20 @@ public class MessageHandler {
             if (conversation.getDisplayAddress() == null) {
                 conversation.setDisplayAddress(contactHandler.getContactNameFromNumber(address));
             }
-            if (conversationList.size() >= INIT_CONVERSATION_COUNT) break;
-        }
-        while (messageCursor.moveToNext());
+
+        } while (messageCursor.moveToNext());
 
         messageCursor.close();
-        Log.d(TagHandler.MAIN_TAG, "Wrote " + conversationList.size() + " conversations in " + (System.currentTimeMillis() - creatingTime) + "ms.");
-//        TODO: Create a SMSLoading task with Async, send the messageCursor.getPosition() as start position
-        LoadMessageTask loadMessageTask = new LoadMessageTask(callingActivity,
-                contactList,
-                conversationList);
-        loadMessageTask.execute(messageCursor.getPosition());
+        Log.d(TagHandler.MAIN_TAG, "Took " + (System.currentTimeMillis() - startTime) + "ms to read the rest conversations.");
+        return null;
     }
 
-    public Hashtable<String, Conversation> getConversationList() {
-        return conversationList;
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        super.onPostExecute(aVoid);
+        activity.setConversationList(conversationList);
+        activity.addConversationListToAdapter(messageList);
+        conversationList = null;
+        messageList = null;
     }
 }

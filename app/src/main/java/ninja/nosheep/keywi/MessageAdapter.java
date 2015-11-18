@@ -1,82 +1,57 @@
 package ninja.nosheep.keywi;
 
+import android.app.Activity;
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-
 /**
- * Adapter for message RecyclerView
+ * Adapter for message ListView
  *
  * @author David Söderberg
  * @since 2015-11-11
  */
-public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder>{
+public class MessageAdapter extends ArrayAdapter<Conversation> {
 
-    private ArrayList<SMSObject> messageList;
-    private AdapterCallback mCallback;
-    private Context context;
+    private final Context context;
 
-    public interface AdapterCallback {
-        void onMessageSelected(SMSObject smsObject);
-    }
-
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-
-        public ViewHolder(View itemView) {
-            super(itemView);
-        }
-    }
-
-    public MessageAdapter(ArrayList<SMSObject> messageList) {
-        this.messageList = messageList;
+    public MessageAdapter (Context context) {
+        super(context, R.layout.list_message);
+        this.context = context;
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        try {
-            mCallback = (AdapterCallback) parent.getContext();
-        } catch (ClassCastException e) {
-            throw new ClassCastException(parent.toString() + " must implement AdapterCallback.");
+    public View getView(int position, View convertView, ViewGroup parent) {
+        ViewHolder viewHolder;
+        final Conversation conversation;
+
+        if (convertView == null) {
+            LayoutInflater inflater = ((Activity) context).getLayoutInflater();
+            convertView = inflater.inflate(R.layout.list_message, parent, false);
+            viewHolder = new ViewHolder();
+            viewHolder.senderInfo = (TextView) convertView.findViewById(R.id.message_address_text_view);
+            viewHolder.body = (TextView) convertView.findViewById(R.id.message_body_text_view);
+            convertView.setTag(viewHolder);
+        }
+        else {
+            viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        context = parent.getContext();
-
-        View v = LayoutInflater.from(context)
-                .inflate(R.layout.list_message, parent, false);
-
-        return new ViewHolder(v);
+        conversation = getItem(position);
+        String displayName;
+        displayName = conversation.getDisplayAddress().equals("")
+                    ? conversation.getAddress()
+                    : conversation.getDisplayAddress();
+        viewHolder.senderInfo.setText(displayName);
+        viewHolder.body.setText(conversation.getLatestMessageBody());
+        return convertView;
     }
 
-    @Override
-    public void onBindViewHolder(ViewHolder holder, final int position) {
-        ContactHandler contactHandler = new ContactHandler(context.getContentResolver());
-        RelativeLayout messageListLayout = (RelativeLayout) holder.itemView.findViewById(R.id.message_list_view);
-
-        TextView addressTextView = (TextView) holder.itemView.findViewById(R.id.message_address_text_view);
-        addressTextView.setText(contactHandler.getContactNameFromNumber(messageList.get(position).getAddress()));
-
-        TextView bodyTextView = (TextView) holder.itemView.findViewById(R.id.message_body_text_view);
-        bodyTextView.setText(messageList.get(position).getMessageBody());
-
-        TextView folderTextView = (TextView) holder.itemView.findViewById(R.id.message_folder_text_view);
-        folderTextView.setText(messageList.get(position).getFolder().toString());
-
-        messageListLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCallback.onMessageSelected(messageList.get(position));
-            }
-        });
-    }
-
-    @Override
-    public int getItemCount() {
-        return messageList.size();
+    private static class ViewHolder {
+        TextView senderInfo;
+        TextView body;
     }
 }

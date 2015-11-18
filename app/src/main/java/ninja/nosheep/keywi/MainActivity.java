@@ -9,15 +9,16 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -30,14 +31,15 @@ import butterknife.ButterKnife;
  * @since 2015-10-26
  */
 
-public class MainActivity extends AppCompatActivity implements MessageAdapter.AdapterCallback {
+public class MainActivity extends AppCompatActivity {
 
-    @Bind(R.id.content_main_recyclerview)
-    RecyclerView messageRecyclerView;
+    @Bind(R.id.content_main_listview)
+    ListView messageListView;
 
     private ArrayList<SMSObject> textMsgList = new ArrayList<>();
+    private Hashtable<String, Conversation> conversationList = new Hashtable<>();
     private MessageHandler messageHandler;
-    RecyclerView.Adapter messageAdapter;
+    private MessageAdapter messageAdapter;
 
     private final static int REQUEST_CODE_PERMISSION_READ_SMS = 100;
     private final static int REQUEST_CODE_PERMISSION_READ_CONTACTS = 101;
@@ -53,18 +55,26 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
 
         askForPermissionOnStart();
 
+        messageAdapter = new MessageAdapter(this);
+        messageListView.setAdapter(messageAdapter);
+
         messageHandler = new MessageHandler(this);
 
         if (PermissionHandler.isOkToReadSMS()) {
-            textMsgList = messageHandler.getSmsList();
+            messageHandler.createConversationList();
+            conversationList = messageHandler.getConversationList();
         }
 
-        messageRecyclerView.setHasFixedSize(true);
-        RecyclerView.LayoutManager messageLayoutManager = new LinearLayoutManager(this);
-        messageRecyclerView.setLayoutManager(messageLayoutManager);
 
-        messageAdapter = new MessageAdapter(textMsgList);
-        messageRecyclerView.setAdapter(messageAdapter);
+        messageListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Snackbar.make(view,
+                        ((Conversation) parent.getItemAtPosition(position)).getDisplayAddress(),
+                        Snackbar.LENGTH_LONG)
+                        .show();
+            }
+        });
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -111,7 +121,6 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
                             Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED) {
                         Log.d(TagHandler.MAIN_TAG, "Read SMS permission GRANTED!");
                         PermissionHandler.setOkToReadSMS(true);
-                        textMsgList = messageHandler.getSmsList();
                     }
                 }
                 break;
@@ -134,15 +143,22 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
     @Override
     protected void onResume() {
         super.onResume();
-
-        messageAdapter.notifyDataSetChanged();
+//        messageAdapter.notifyDataSetChanged();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
         askForPermissionOnStart();
+    }
+
+    public void addConversationToAdapter(Conversation conversation) {
+        messageAdapter.add(conversation);
+    }
+
+    public void addConversationListToAdapter(ArrayList<Conversation> conversations) {
+        messageAdapter.addAll(conversations);
+        Log.d(TagHandler.MAIN_TAG, "Added the rest of the conversations.");
     }
 
     private void askForPermissionOnStart() {
@@ -172,11 +188,7 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
         }
     }
 
-    @Override
-    public void onMessageSelected(SMSObject smsObject) {
-        Snackbar.make(messageRecyclerView,
-                "Message id: " + smsObject.getId(),
-                Snackbar.LENGTH_LONG)
-                .show();
+    public void setConversationList(Hashtable<String, Conversation> conversationList) {
+        this.conversationList = conversationList;
     }
 }
