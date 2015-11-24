@@ -3,9 +3,9 @@ package ninja.nosheep.keywi;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.provider.ContactsContract;
+import android.telephony.PhoneNumberUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Hashtable;
 
 /**
  * All handling of users contact-list belongs here.
@@ -15,8 +15,8 @@ import java.util.List;
  */
 public class ContactHandler {
 
-    public static List<ContactObject> oftenUsedContactList = new ArrayList<>();
     ContentResolver contentResolver;
+    private static Hashtable<String, String> popularContactList = new Hashtable<>();
 
     public ContactHandler(ContentResolver contentResolver) {
         this.contentResolver = contentResolver;
@@ -24,26 +24,12 @@ public class ContactHandler {
 
     public String getContactNameFromNumber(String number) {
         if (PermissionHandler.isOkToReadContacts()) {
-            for (ContactObject contact : oftenUsedContactList) {
-                if (contact.getPhoneNumber().equals(number)) {
-                    return contact.getDisplayName();
-                }
-            }
-
             Cursor phones = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
             assert phones != null;
             while (phones.moveToNext()) {
                 String phoneNumber = phones.getString(phones.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER));
 
-                if (phoneNumber != null && phoneNumber.equals(number)) {
-//                    Log.d(TagHandler.MAIN_TAG, "SMS from: "
-//                            + phones.getString(phones.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
-//                            + ", number: " + phoneNumber
-//                            + ", ID: " + phones.getString(phones.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.CONTACT_ID)));
-
-                    addOftenUsedContact(new ContactObject(phones.getString(phones.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)),
-                            phones.getInt(phones.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.CONTACT_ID)),
-                            phoneNumber));
+                if (phoneNumber != null && PhoneNumberUtils.compare(phoneNumber, number)) {
                     return phones.getString(phones.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                 }
             }
@@ -52,7 +38,26 @@ public class ContactHandler {
         return number;
     }
 
-    public static void addOftenUsedContact(ContactObject contact) {
-        oftenUsedContactList.add(contact);
+    public static String returnAddressFromPopularContacts(String address) {
+        if (!popularContactList.containsKey(address)) {
+//                If number isn't saved in popularContactList
+
+//                Checking if our address is the same as another one
+            String savedAddress = "";
+            for (String numbers : popularContactList.values()) {
+                if (PhoneNumberUtils.compare(address, numbers)) {
+                    savedAddress = numbers;
+                    break;
+                }
+            }
+
+//                If we didn't found a similar address in our popularContactList, then we save the current address.
+            if (savedAddress.isEmpty()) savedAddress = address;
+            popularContactList.put(address, savedAddress);
+            address = savedAddress;
+        } else {
+            address = popularContactList.get(address);
+        }
+        return address;
     }
 }

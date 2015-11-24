@@ -1,8 +1,11 @@
 package ninja.nosheep.keywi;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.database.Cursor;
 import android.provider.Telephony;
+import android.telephony.PhoneNumberUtils;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import java.util.Hashtable;
@@ -18,26 +21,27 @@ public class MessageHandler {
 
     private MainActivity callingActivity;
 
-    private ContactHandler contactHandler;
-
     private Hashtable<String, Conversation> conversationList = new Hashtable<>();
-    private Hashtable<String, String> contactList = new Hashtable<>();
+    private Hashtable<String, String> popularContactList = new Hashtable<>();
 
-    private static final int INIT_CONVERSATION_COUNT = 20;
+    private static final int INIT_CONVERSATION_COUNT = 12;
+
+    private String countryCode;
 
     public MessageHandler(MainActivity callingActivity) {
         this.callingActivity = callingActivity;
-        contactHandler = new ContactHandler(callingActivity.getContentResolver());
+        TelephonyManager tm = (TelephonyManager) callingActivity.getSystemService(Context.TELEPHONY_SERVICE);
+        countryCode = tm.getSimCountryIso();
     }
 
     public void createConversationList() {
         long creatingTime = System.currentTimeMillis();
 
         String[] projection = {Telephony.Sms.ADDRESS,
-            Telephony.Sms.BODY,
-            Telephony.Sms.DATE,
-            Telephony.Sms.READ,
-            Telephony.Sms.TYPE};
+                Telephony.Sms.BODY,
+                Telephony.Sms.DATE,
+                Telephony.Sms.READ,
+                Telephony.Sms.TYPE};
 
         ContentResolver contentResolver = callingActivity.getContentResolver();
         Cursor messageCursor = contentResolver.query(Telephony.Sms.CONTENT_URI,
@@ -69,51 +73,72 @@ public class MessageHandler {
             MessageObject.MessageFolder folder;
             if (messageCursor.getString(folderIndex).contains("1")) {
                 folder = MessageObject.MessageFolder.INBOX;
-            }
-            else {
+            } else {
                 folder = MessageObject.MessageFolder.SENT;
             }
 
             boolean isReaded = Objects.equals(messageCursor.getString(readIndex), "1");
+
+
+//            address = ContactHandler.returnAddressFromPopularContacts(address);
+//            TODO: CLEAN SHIT UP:
+            if (!popularContactList.containsKey(address)) {
+//                If number isn't saved in popularContactList
+
+//                Checking if our address is the same as another one
+                String savedAddress = "";
+                for (String numbers : popularContactList.values()) {
+                    if (PhoneNumberUtils.compare(address, numbers)) {
+                        savedAddress = numbers;
+                        break;
+                    }
+                }
+
+//                If we didn't found a similar address in our popularContactList, then we save the current address.
+                if (savedAddress.isEmpty()) savedAddress = address;
+                popularContactList.put(address, savedAddress);
+                address = savedAddress;
+            } else {
+                address = popularContactList.get(address);
+            }
+
             Conversation conversation;
 
             if (!conversationList.containsKey(address)) {
                 conversation = new Conversation(address, isReaded);
 //                TODO: Unnecessarily to store address in SMS?
-                conversation.addMessage(new SMSObject(1234,
-                        messageCursor.getString(addressIndex),
-                        messageCursor.getString(bodyIndex),
-                        folder,
-                        messageCursor.getString(timeIndex),
-                        isReaded));
-
+                storeMessageInConversation(conversation, addressIndex, bodyIndex, folder,
+                        timeIndex, isReaded, messageCursor);
                 conversationList.put(address, conversation);
                 callingActivity.addConversationToAdapter(conversation);
-            }
-            else {
+            } else {
                 conversation = conversationList.get(address);
-                conversation.addMessage(new SMSObject(1234,
-                        messageCursor.getString(addressIndex),
-                        messageCursor.getString(bodyIndex),
-                        folder,
-                        messageCursor.getString(timeIndex),
-                        isReaded));
+                storeMessageInConversation(conversation, addressIndex, bodyIndex, folder,
+                        timeIndex, isReaded, messageCursor);
             }
 
-            if (conversation.getDisplayAddress() == null) {
-                conversation.setDisplayAddress(contactHandler.getContactNameFromNumber(address));
-            }
             if (conversationList.size() >= INIT_CONVERSATION_COUNT) break;
         }
         while (messageCursor.moveToNext());
 
         messageCursor.close();
         Log.d(TagHandler.MAIN_TAG, "Wrote " + conversationList.size() + " conversations in " + (System.currentTimeMillis() - creatingTime) + "ms.");
-//        TODO: Create a SMSLoading task with Async, send the messageCursor.getPosition() as start position
         LoadMessageTask loadMessageTask = new LoadMessageTask(callingActivity,
-                contactList,
-                conversationList);
+                conversationList,
+                popularContactList,
+                countryCode);
         loadMessageTask.execute(messageCursor.getPosition());
+
+    }
+
+    private void storeMessageInConversation(Conversation conversation, int addressIndex, int bodyIndex, MessageObject.MessageFolder folder,
+                                            int timeIndex, boolean isReaded, Cursor messageCursor) {
+        conversation.addMessage(new SMSObject(1234,
+                messageCursor.getString(addressIndex),
+                messageCursor.getString(bodyIndex),
+                folder,
+                messageCursor.getString(timeIndex),
+                isReaded));
     }
 
     public Hashtable<String, Conversation> getConversationList() {

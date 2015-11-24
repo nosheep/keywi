@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.provider.Telephony;
+import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -18,16 +19,21 @@ import java.util.Objects;
  */
 public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
     private MainActivity activity;
-    private Hashtable<String, String> contactList;
     private Hashtable<String, Conversation> conversationList;
     private ArrayList<Conversation> messageList = new ArrayList<>();
-    private ContactHandler contactHandler;
+    private String countryCode;
+    private Hashtable<String, String> popularContactList;
 
-    public LoadMessageTask(MainActivity activity, Hashtable<String, String> contactList, Hashtable<String, Conversation> conversationList) {
+    private long startTime;
+
+    public LoadMessageTask(MainActivity activity, Hashtable<String, Conversation> conversationList,
+                           Hashtable<String, String> popularContactList, String countryCode) {
         this.activity = activity;
-        this.contactList = contactList;
         this.conversationList = (Hashtable<String, Conversation>) conversationList.clone();
-        contactHandler = new ContactHandler(activity.getContentResolver());
+        this.countryCode = countryCode;
+        this.popularContactList = popularContactList;
+        Log.d(TagHandler.MAIN_TAG, "Started loading the rest of the messages.");
+        startTime = System.currentTimeMillis();
     }
 
     @Override
@@ -73,6 +79,39 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
             }
 
             boolean isReaded = Objects.equals(messageCursor.getString(readIndex), "1");
+
+            if (!popularContactList.containsKey(address)) {
+//                If number isn't saved in popularContactList
+
+//                Checking if our address is the same as another one
+                String savedAddress = "";
+                for (String numbers : popularContactList.values()) {
+                    if (PhoneNumberUtils.compare(address, numbers)) {
+                        savedAddress = numbers;
+                        break;
+                    }
+                }
+
+//                If we didn't found a similar address in our popularContactList, then we save the current address.
+                if (savedAddress.isEmpty()) savedAddress = address;
+                popularContactList.put(address, savedAddress);
+                address = savedAddress;
+//                Unnecessary code??? :
+//                if (!numberIsSaved) {
+//                    Log.d(TagHandler.MAIN_TAG, "OMG it's a new number!!! " + address);
+//                    String formattedNumber = PhoneNumberUtils.formatNumberToE164(address, countryCode);
+//                    if (formattedNumber != null) {
+//                        popularContactList.put(address, formattedNumber);
+//                    }
+//                    else {
+//                        popularContactList.put(address, address);
+//                    }
+//                    Log.d(TagHandler.MAIN_TAG, "Added a formatted number to the list: " + formattedNumber);
+//                }
+            } else {
+                address = popularContactList.get(address);
+            }
+
             Conversation conversation;
 
             if (!conversationList.containsKey(address)) {
@@ -98,10 +137,6 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
                         isReaded));
             }
 
-            if (conversation.getDisplayAddress() == null) {
-                conversation.setDisplayAddress(contactHandler.getContactNameFromNumber(address));
-            }
-
         } while (messageCursor.moveToNext());
 
         messageCursor.close();
@@ -116,5 +151,7 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
         activity.addConversationListToAdapter(messageList);
         conversationList = null;
         messageList = null;
+//        LoadContactsTask loadContactsTask = new LoadContactsTask(activity, countryCode);
+//        loadContactsTask.execute();
     }
 }

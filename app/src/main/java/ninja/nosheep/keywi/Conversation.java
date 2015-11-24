@@ -75,7 +75,8 @@ public class Conversation {
     }
 
     public String getDisplayAddress() {
-        return displayAddress;
+        if (displayAddress != null) return displayAddress;
+        else return address;
     }
 
     public ArrayList<SMSObject> getMessageList() {

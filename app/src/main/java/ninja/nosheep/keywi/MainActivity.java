@@ -9,13 +9,13 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -34,9 +34,8 @@ import butterknife.ButterKnife;
 public class MainActivity extends AppCompatActivity {
 
     @Bind(R.id.content_main_listview)
-    ListView messageListView;
+    RecyclerView messageRecyclerView;
 
-    private ArrayList<SMSObject> textMsgList = new ArrayList<>();
     private Hashtable<String, Conversation> conversationList = new Hashtable<>();
     private MessageHandler messageHandler;
     private MessageAdapter messageAdapter;
@@ -57,9 +56,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TagHandler.MAIN_TAG, "Creating toolbar and stuff in " + (System.currentTimeMillis() - startTime) + "ms.");
 
         askForPermissionOnStart();
-
-        messageAdapter = new MessageAdapter(this);
-        messageListView.setAdapter(messageAdapter);
+        initRecyclerView();
 
         messageHandler = new MessageHandler(this);
 
@@ -67,17 +64,6 @@ public class MainActivity extends AppCompatActivity {
             messageHandler.createConversationList();
             conversationList = messageHandler.getConversationList();
         }
-
-
-        messageListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Snackbar.make(view,
-                        ((Conversation) parent.getItemAtPosition(position)).getDisplayAddress(),
-                        Snackbar.LENGTH_LONG)
-                        .show();
-            }
-        });
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -157,13 +143,12 @@ public class MainActivity extends AppCompatActivity {
         askForPermissionOnStart();
     }
 
-    public void addConversationToAdapter(Conversation conversation) {
-        messageAdapter.add(conversation);
-    }
+    private void initRecyclerView() {
+        messageRecyclerView.setHasFixedSize(true);
+        messageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-    public void addConversationListToAdapter(ArrayList<Conversation> conversations) {
-        messageAdapter.addAll(conversations);
-        Log.d(TagHandler.MAIN_TAG, "Added the rest of the conversations.");
+        messageAdapter = new MessageAdapter(this);
+        messageRecyclerView.setAdapter(messageAdapter);
     }
 
     private void askForPermissionOnStart() {
@@ -195,5 +180,26 @@ public class MainActivity extends AppCompatActivity {
 
     public void setConversationList(Hashtable<String, Conversation> conversationList) {
         this.conversationList = conversationList;
+    }
+
+    public void addConversationToAdapter(Conversation conversation) {
+        messageAdapter.addConversation(conversation);
+    }
+
+    public void addConversationListToAdapter(ArrayList<Conversation> conversations) {
+        messageAdapter.addConversationList(conversations);
+        Log.d(TagHandler.MAIN_TAG, "Added the rest of the conversations.");
+    }
+
+    public void changeAddressTextInAdapter(int position, String newText) {
+        messageAdapter.changeAddressText(position, newText);
+    }
+
+    public ArrayList<Conversation> getConversationListFromAdapter() {
+        return messageAdapter.getConversationList();
+    }
+
+    public void setConversationListToAdapter(ArrayList<Conversation> conversationList) {
+        messageAdapter.setConversationList(conversationList);
     }
 }
