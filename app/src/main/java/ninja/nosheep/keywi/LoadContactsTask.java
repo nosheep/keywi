@@ -27,6 +27,8 @@ public class LoadContactsTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... params) {
+//        TASK: Set displayName of conversation, update the text in MessageAdapter
+
         for (int i = 0; i < conversationList.size(); i ++) {
             String displayAddress = contactHandler.getContactNameFromNumber(conversationList.get(i).getAddress());
             if (!Objects.equals(conversationList.get(i).getDisplayAddress(),

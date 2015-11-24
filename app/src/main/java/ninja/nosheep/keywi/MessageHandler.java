@@ -4,7 +4,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.provider.Telephony;
-import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -49,7 +48,7 @@ public class MessageHandler {
                 null,
                 null,
                 Telephony.Sms.DEFAULT_SORT_ORDER);
-        assert messageCursor != null;
+
         int addressIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS);
         int bodyIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.BODY);
         int timeIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.DATE);
@@ -80,9 +79,9 @@ public class MessageHandler {
             boolean isReaded = Objects.equals(messageCursor.getString(readIndex), "1");
 
 
-//            address = ContactHandler.returnAddressFromPopularContacts(address);
+            address = ContactHandler.returnAddressFromPopularContacts(address);
 //            TODO: CLEAN SHIT UP:
-            if (!popularContactList.containsKey(address)) {
+            /*if (!popularContactList.containsKey(address)) {
 //                If number isn't saved in popularContactList
 
 //                Checking if our address is the same as another one
@@ -100,10 +99,9 @@ public class MessageHandler {
                 address = savedAddress;
             } else {
                 address = popularContactList.get(address);
-            }
+            }*/
 
             Conversation conversation;
-
             if (!conversationList.containsKey(address)) {
                 conversation = new Conversation(address, isReaded);
 //                TODO: Unnecessarily to store address in SMS?
@@ -127,7 +125,11 @@ public class MessageHandler {
                 conversationList,
                 popularContactList,
                 countryCode);
+        loadMessageTask.setIndexes(addressIndex, bodyIndex, timeIndex, readIndex, folderIndex);
+        loadMessageTask.setProjection(projection);
         loadMessageTask.execute(messageCursor.getPosition());
+
+//        TODO: Start a LoadContactTask with the INIT_CONVERSATION_COUNT first conversations
 
     }
 

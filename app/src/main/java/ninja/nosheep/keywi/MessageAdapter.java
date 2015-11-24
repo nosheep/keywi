@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     private LayoutInflater inflater;
     private Context context;
     private ArrayList<Conversation> conversationList = new ArrayList<>();
+    private AdapterCallback mCallback;
 
     public MessageAdapter(Context context) {
         this.context = context;
@@ -28,14 +30,25 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        try {
+            mCallback = (AdapterCallback) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + " must implement AdapterCallback");
+        }
         View view = inflater.inflate(R.layout.list_message, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(ViewHolder holder, final int position) {
         holder.addressTextView.setText(conversationList.get(position).getDisplayAddress());
         holder.bodyTextView.setText(conversationList.get(position).getLatestMessageBody());
+        holder.holderLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCallback.onClick(conversationList.get(position));
+            }
+        });
     }
 
     @Override
@@ -69,13 +82,19 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
+        private RelativeLayout holderLayout;
         private TextView addressTextView;
         private TextView bodyTextView;
 
         public ViewHolder(View itemView) {
             super(itemView);
+            holderLayout = (RelativeLayout) itemView.findViewById(R.id.message_list_view);
             addressTextView = (TextView) itemView.findViewById(R.id.message_address_text_view);
             bodyTextView = (TextView) itemView.findViewById(R.id.message_body_text_view);
         }
+    }
+
+    public interface AdapterCallback {
+        void onClick(Conversation conversation);
     }
 }

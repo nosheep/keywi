@@ -31,7 +31,7 @@ import butterknife.ButterKnife;
  * @since 2015-10-26
  */
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MessageAdapter.AdapterCallback {
 
     @Bind(R.id.content_main_listview)
     RecyclerView messageRecyclerView;
@@ -55,10 +55,10 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TagHandler.MAIN_TAG, "Creating toolbar and stuff in " + (System.currentTimeMillis() - startTime) + "ms.");
 
+        messageHandler = new MessageHandler(this);
+
         askForPermissionOnStart();
         initRecyclerView();
-
-        messageHandler = new MessageHandler(this);
 
         if (PermissionHandler.isOkToReadSMS()) {
             messageHandler.createConversationList();
@@ -112,6 +112,9 @@ public class MainActivity extends AppCompatActivity {
                             Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED) {
                         Log.d(TagHandler.MAIN_TAG, "Read SMS permission GRANTED!");
                         PermissionHandler.setOkToReadSMS(true);
+                        messageHandler.createConversationList();
+                        conversationList = messageHandler.getConversationList();
+                        messageAdapter.notifyDataSetChanged();
                     }
                 }
                 break;
@@ -134,13 +137,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-//        messageAdapter.notifyDataSetChanged();
+//        TODO: Create a system where permission is checked onResume or onStart, and updates the list.
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        askForPermissionOnStart();
     }
 
     private void initRecyclerView() {
@@ -201,5 +203,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void setConversationListToAdapter(ArrayList<Conversation> conversationList) {
         messageAdapter.setConversationList(conversationList);
+    }
+
+    @Override
+    public void onClick(Conversation conversation) {
+        Snackbar.make(messageRecyclerView,
+                conversation.getDisplayAddress(),
+                Snackbar.LENGTH_LONG)
+        .show();
     }
 }

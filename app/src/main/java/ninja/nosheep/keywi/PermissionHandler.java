@@ -26,4 +26,5 @@ public class PermissionHandler {
     public static void setOkToReadSMS(boolean okToReadSMS) {
         PermissionHandler.okToReadSMS = okToReadSMS;
     }
+
 }

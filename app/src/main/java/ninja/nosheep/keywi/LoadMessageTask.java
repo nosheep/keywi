@@ -4,7 +4,6 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.provider.Telephony;
-import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -24,6 +23,9 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
     private String countryCode;
     private Hashtable<String, String> popularContactList;
 
+    private int addressIndex, bodyIndex, timeIndex, readIndex, folderIndex;
+    private String[] projection;
+
     private long startTime;
 
     public LoadMessageTask(MainActivity activity, Hashtable<String, Conversation> conversationList,
@@ -36,16 +38,30 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
         startTime = System.currentTimeMillis();
     }
 
+    public void setIndexes(int addressIndex, int bodyIndex, int timeIndex, int readIndex, int folderIndex) {
+        this.addressIndex = addressIndex;
+        this.bodyIndex = bodyIndex;
+        this.timeIndex = timeIndex;
+        this.readIndex = readIndex;
+        this.folderIndex = folderIndex;
+    }
+
+    public void setProjection(String[] projection) {
+        this.projection = projection;
+    }
+
     @Override
     protected Void doInBackground(Integer... params) {
         long startTime = System.currentTimeMillis();
         int startIndex = params[0];
 
-        String[] projection = {Telephony.Sms.ADDRESS,
-                Telephony.Sms.BODY,
-                Telephony.Sms.DATE,
-                Telephony.Sms.READ,
-                Telephony.Sms.TYPE};
+//        TODO: Remove comments if working
+
+//        String[] projection = {Telephony.Sms.ADDRESS,
+//                Telephony.Sms.BODY,
+//                Telephony.Sms.DATE,
+//                Telephony.Sms.READ,
+//                Telephony.Sms.TYPE};
         ContentResolver contentResolver = activity.getContentResolver();
         Cursor messageCursor = contentResolver.query(Telephony.Sms.CONTENT_URI,
                 projection,
@@ -53,11 +69,12 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
                 null,
                 Telephony.Sms.DEFAULT_SORT_ORDER);
 
-        int addressIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS);
-        int bodyIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.BODY);
-        int timeIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.DATE);
-        int readIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.READ);
-        int folderIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.TYPE);
+
+//        addressIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS);
+//        bodyIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.BODY);
+//        timeIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.DATE);
+//        readIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.READ);
+//        folderIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.TYPE);
         String address;
 
         if (!messageCursor.moveToPosition(startIndex)) {
@@ -80,7 +97,9 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
 
             boolean isReaded = Objects.equals(messageCursor.getString(readIndex), "1");
 
-            if (!popularContactList.containsKey(address)) {
+            address = ContactHandler.returnAddressFromPopularContacts(address);
+
+            /*if (!popularContactList.containsKey(address)) {
 //                If number isn't saved in popularContactList
 
 //                Checking if our address is the same as another one
@@ -110,31 +129,23 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
 //                }
             } else {
                 address = popularContactList.get(address);
-            }
+            }*/
 
             Conversation conversation;
 
             if (!conversationList.containsKey(address)) {
                 conversation = new Conversation(address, isReaded);
 //                TODO: Unnecessarily to store address in SMS?
-                conversation.addMessage(new SMSObject(1234,
-                        messageCursor.getString(addressIndex),
-                        messageCursor.getString(bodyIndex),
-                        folder,
-                        messageCursor.getString(timeIndex),
-                        isReaded));
+                storeMessageInConversation(conversation, addressIndex, bodyIndex, folder,
+                        timeIndex, isReaded, messageCursor);
 
                 conversationList.put(address, conversation);
                 messageList.add(conversation);
             }
             else {
                 conversation = conversationList.get(address);
-                conversation.addMessage(new SMSObject(1234,
-                        messageCursor.getString(addressIndex),
-                        messageCursor.getString(bodyIndex),
-                        folder,
-                        messageCursor.getString(timeIndex),
-                        isReaded));
+                storeMessageInConversation(conversation, addressIndex, bodyIndex, folder,
+                        timeIndex, isReaded, messageCursor);
             }
 
         } while (messageCursor.moveToNext());
@@ -153,5 +164,15 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
         messageList = null;
 //        LoadContactsTask loadContactsTask = new LoadContactsTask(activity, countryCode);
 //        loadContactsTask.execute();
+    }
+
+    private void storeMessageInConversation(Conversation conversation, int addressIndex, int bodyIndex, MessageObject.MessageFolder folder,
+                                            int timeIndex, boolean isReaded, Cursor messageCursor) {
+        conversation.addMessage(new SMSObject(1234,
+                messageCursor.getString(addressIndex),
+                messageCursor.getString(bodyIndex),
+                folder,
+                messageCursor.getString(timeIndex),
+                isReaded));
     }
 }
