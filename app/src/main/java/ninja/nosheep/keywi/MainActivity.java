@@ -17,6 +17,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.pluscubed.recyclerfastscroll.RecyclerFastScroller;
+
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -35,6 +37,8 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
 
     @Bind(R.id.content_main_listview)
     RecyclerView messageRecyclerView;
+    @Bind(R.id.content_main_scroller)
+    RecyclerFastScroller fastScroller;
 
     private Hashtable<String, Conversation> conversationList = new Hashtable<>();
     private MessageHandler messageHandler;
@@ -151,6 +155,8 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
 
         messageAdapter = new MessageAdapter(this);
         messageRecyclerView.setAdapter(messageAdapter);
+
+        fastScroller.setRecyclerView(messageRecyclerView);
     }
 
     private void askForPermissionOnStart() {
