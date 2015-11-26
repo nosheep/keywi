@@ -22,15 +22,17 @@ public class MessageHandler {
 
     private Hashtable<String, Conversation> conversationList = new Hashtable<>();
     private Hashtable<String, String> popularContactList = new Hashtable<>();
+    private ContactHandler contactHandler;
 
-    private static final int INIT_CONVERSATION_COUNT = 12;
+    private static final int INIT_CONVERSATION_COUNT = 10;
 
     private String countryCode;
 
-    public MessageHandler(MainActivity callingActivity) {
+    public MessageHandler(MainActivity callingActivity, ContactHandler contactHandler) {
         this.callingActivity = callingActivity;
         TelephonyManager tm = (TelephonyManager) callingActivity.getSystemService(Context.TELEPHONY_SERVICE);
         countryCode = tm.getSimCountryIso();
+        this.contactHandler = contactHandler;
     }
 
     public void createConversationList() {
@@ -80,26 +82,6 @@ public class MessageHandler {
 
 
             address = ContactHandler.returnAddressFromPopularContacts(address);
-//            TODO: CLEAN SHIT UP:
-            /*if (!popularContactList.containsKey(address)) {
-//                If number isn't saved in popularContactList
-
-//                Checking if our address is the same as another one
-                String savedAddress = "";
-                for (String numbers : popularContactList.values()) {
-                    if (PhoneNumberUtils.compare(address, numbers)) {
-                        savedAddress = numbers;
-                        break;
-                    }
-                }
-
-//                If we didn't found a similar address in our popularContactList, then we save the current address.
-                if (savedAddress.isEmpty()) savedAddress = address;
-                popularContactList.put(address, savedAddress);
-                address = savedAddress;
-            } else {
-                address = popularContactList.get(address);
-            }*/
 
             Conversation conversation;
             if (!conversationList.containsKey(address)) {
@@ -121,13 +103,17 @@ public class MessageHandler {
 
         messageCursor.close();
         Log.d(TagHandler.MAIN_TAG, "Wrote " + conversationList.size() + " conversations in " + (System.currentTimeMillis() - creatingTime) + "ms.");
+        LoadContactsTask loadContactsTask = new LoadContactsTask(callingActivity, contactHandler);
+        loadContactsTask.execute();
         LoadMessageTask loadMessageTask = new LoadMessageTask(callingActivity,
                 conversationList,
                 popularContactList,
-                countryCode);
+                countryCode,
+                contactHandler);
         loadMessageTask.setIndexes(addressIndex, bodyIndex, timeIndex, readIndex, folderIndex);
         loadMessageTask.setProjection(projection);
         loadMessageTask.execute(messageCursor.getPosition());
+
 
 //        TODO: Start a LoadContactTask with the INIT_CONVERSATION_COUNT first conversations
 

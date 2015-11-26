@@ -13,12 +13,12 @@
         android:gravity="start|top"
         android:paddingTop="20dp"
         android:paddingBottom="4dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
+        android:paddingStart="@dimen/margin_16dp"
+        android:paddingEnd="@dimen/margin_16dp"
 
         android:textColor="@color/textColorPrimary"
         android:textSize="16sp"
-        android:text="Example Contact"/>
+        android:text="@string/example_contact"/>
     <TextView
         android:id="@+id/message_folder_text_view"
         android:layout_width="wrap_content"
@@ -27,7 +27,8 @@
         android:layout_alignParentEnd="true"
 
         android:paddingTop="20dp"
-        android:paddingEnd="16dp"
+        android:paddingStart="0dp"
+        android:paddingEnd="@dimen/margin_16dp"
 
         android:textColor="@color/textColorSecondary"
         android:textSize="16sp"
@@ -46,14 +47,12 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
 
-        android:text="Example message"
+        android:singleLine="true"
+        android:lines="1"
+        android:ellipsize="end"
+
+        android:text="@string/example_message"
         android:textColor="@color/textColorSecondary"
         android:textSize="14sp" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/textColorDivider"
-        android:layout_below="@id/message_body_text_view"/>
 
 </RelativeLayout>

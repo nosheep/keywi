@@ -2,4 +2,6 @@
     <string name="app_name">Keywi Beta</string>
     <string name="action_settings">Settings</string>
     <string name="no_messages">No messages founded</string>
+    <string name="example_contact">Example Contact</string>
+    <string name="example_message">Example message</string>
 </resources>

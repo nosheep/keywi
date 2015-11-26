@@ -4,8 +4,10 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
+import android.util.Log;
 
 import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * All handling of users contact-list belongs here.
@@ -17,23 +19,68 @@ public class ContactHandler {
 
     ContentResolver contentResolver;
     private static Hashtable<String, String> popularContactList = new Hashtable<>();
+    private static Hashtable<String, String> contactList = new Hashtable<>();
+    private static boolean contactListCreated = false;
 
     public ContactHandler(ContentResolver contentResolver) {
         this.contentResolver = contentResolver;
     }
 
+    public static boolean isContactListCreated() {
+        Log.d(TagHandler.MAIN_TAG, "Requesting contactListCreated. " + contactListCreated);
+        return contactListCreated;
+    }
+
+    public static void setContactListCreated(boolean contactListCreated) {
+        ContactHandler.contactListCreated = contactListCreated;
+    }
+
+    public void createContactList() {
+        long startTime = System.currentTimeMillis();
+        Log.d(TagHandler.MAIN_TAG, "ContactHandler: Started creating contactlist.");
+        if (!ContactHandler.isContactListCreated()) {
+            if (PermissionHandler.isOkToReadContacts()) {
+                String name, number;
+                String[] mPhoneNumberProjection =
+                        {ContactsContract.CommonDataKinds.Phone.NUMBER, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME};
+                Cursor cursor = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                        mPhoneNumberProjection,
+                        ContactsContract.Contacts.HAS_PHONE_NUMBER + " = ?",
+                        new String[]{"1"},
+                        null);
+                if (!cursor.moveToFirst()) {
+                    return;
+                }
+                do {
+                    number = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                    name = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME));
+                    contactList.put(number, name);
+                } while (cursor.moveToNext());
+                cursor.close();
+                Log.d(TagHandler.MAIN_TAG, "Setting contactListCreated to " + contactListCreated);
+            }
+        } else {
+            Log.v(TagHandler.MAIN_TAG, "ContactHandler: Contactlist is already created.");
+        }
+        contactListCreated = true;
+        Log.d(TagHandler.MAIN_TAG, "ContactHandler: Created contactlist in " + (System.currentTimeMillis() - startTime) + "ms");
+    }
+
     public String getContactNameFromNumber(String number) {
         if (PermissionHandler.isOkToReadContacts()) {
-            Cursor phones = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
-            assert phones != null;
-            while (phones.moveToNext()) {
-                String phoneNumber = phones.getString(phones.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER));
-
-                if (phoneNumber != null && PhoneNumberUtils.compare(phoneNumber, number)) {
-                    return phones.getString(phones.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+            if (!isContactListCreated()) {
+                createContactList();
+            } else {
+                if (!contactList.containsKey(number)) {
+                    for (Map.Entry<String, String> entry : contactList.entrySet()) {
+                        if (PhoneNumberUtils.compare(entry.getKey(), number)) {
+                            return entry.getValue();
+                        }
+                    }
+                } else {
+                    return contactList.get(number);
                 }
             }
-            phones.close();
         }
         return number;
     }

@@ -20,7 +20,6 @@ import android.view.View;
 import com.pluscubed.recyclerfastscroll.RecyclerFastScroller;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -40,9 +39,12 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
     @Bind(R.id.content_main_scroller)
     RecyclerFastScroller fastScroller;
 
-    private Hashtable<String, Conversation> conversationList = new Hashtable<>();
     private MessageHandler messageHandler;
     private MessageAdapter messageAdapter;
+    private ContactHandler contactHandler;
+
+    private CreateContactListTask createContactListTask;
+    private LoadContactsTask loadContactsTask;
 
     private final static int REQUEST_CODE_PERMISSION_READ_SMS = 100;
     private final static int REQUEST_CODE_PERMISSION_READ_CONTACTS = 101;
@@ -59,14 +61,21 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
 
         Log.d(TagHandler.MAIN_TAG, "Creating toolbar and stuff in " + (System.currentTimeMillis() - startTime) + "ms.");
 
-        messageHandler = new MessageHandler(this);
+        ContactHandler.setContactListCreated(false);
+
+        contactHandler = new ContactHandler(getContentResolver());
+        messageHandler = new MessageHandler(this, contactHandler);
 
         askForPermissionOnStart();
         initRecyclerView();
 
+        createContactListTask = new CreateContactListTask(contactHandler);
+        createContactListTask.execute();
+
+        loadContactsTask = new LoadContactsTask(this, contactHandler);
+
         if (PermissionHandler.isOkToReadSMS()) {
             messageHandler.createConversationList();
-            conversationList = messageHandler.getConversationList();
         }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -117,7 +126,6 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
                         Log.d(TagHandler.MAIN_TAG, "Read SMS permission GRANTED!");
                         PermissionHandler.setOkToReadSMS(true);
                         messageHandler.createConversationList();
-                        conversationList = messageHandler.getConversationList();
                         messageAdapter.notifyDataSetChanged();
                     }
                 }
@@ -129,11 +137,13 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
                             Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
                         Log.d(TagHandler.MAIN_TAG, "Read contacs permission GRANTED!");
                         PermissionHandler.setOkToReadContacts(true);
+                        createContactListTask.execute();
+                        loadContactsTask.execute();
                     }
                 }
                 break;
             default:
-                Log.e(TagHandler.MAIN_TAG, "Something went horrible wrong.");
+                Log.e(TagHandler.MAIN_TAG, "MainActivity: Got a request code that doesn't exist.");
                 break;
         }
     }
@@ -155,7 +165,6 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
 
         messageAdapter = new MessageAdapter(this);
         messageRecyclerView.setAdapter(messageAdapter);
-
         fastScroller.setRecyclerView(messageRecyclerView);
     }
 
@@ -184,10 +193,6 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
         } else {
             PermissionHandler.setOkToReadContacts(true);
         }
-    }
-
-    public void setConversationList(Hashtable<String, Conversation> conversationList) {
-        this.conversationList = conversationList;
     }
 
     public void addConversationToAdapter(Conversation conversation) {

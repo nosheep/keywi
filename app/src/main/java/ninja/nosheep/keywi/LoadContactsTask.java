@@ -1,6 +1,7 @@
 package ninja.nosheep.keywi;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -18,23 +19,39 @@ public class LoadContactsTask extends AsyncTask<Void, Void, Void> {
     private ArrayList<Conversation> conversationList;
     String countryCode;
 
-    public LoadContactsTask(MainActivity activity, String countryCode) {
+    public LoadContactsTask(MainActivity activity, ContactHandler contactHandler, String countryCode) {
         this.activity = activity;
-        contactHandler = new ContactHandler(activity.getContentResolver());
+        this.contactHandler = contactHandler;
         conversationList = activity.getConversationListFromAdapter();
         this.countryCode = countryCode;
+    }
+
+    public LoadContactsTask(MainActivity activity, ContactHandler contactHandler) {
+        this.activity = activity;
+        conversationList = activity.getConversationListFromAdapter();
+        this.contactHandler = contactHandler;
     }
 
     @Override
     protected Void doInBackground(Void... params) {
 //        TASK: Set displayName of conversation, update the text in MessageAdapter
 
+        while (!ContactHandler.isContactListCreated()) {
+            Log.d(TagHandler.MAIN_TAG, "LoadContactsTask: Contactlist isn't ready. Waiting 100ms");
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Log.e(TagHandler.MAIN_TAG, "LoadContactsTask: Couldn't Thread.sleep");
+            }
+        }
         for (int i = 0; i < conversationList.size(); i ++) {
-            String displayAddress = contactHandler.getContactNameFromNumber(conversationList.get(i).getAddress());
-            if (!Objects.equals(conversationList.get(i).getDisplayAddress(),
-                    displayAddress)) {
-                conversationList.get(i).setDisplayAddress(displayAddress);
-                activity.changeAddressTextInAdapter(i, displayAddress);
+            if (Objects.equals(conversationList.get(i).getDisplayAddress(), conversationList.get(i).getAddress())) {
+                conversationList.get(i).setDisplayAddress(contactHandler.getContactNameFromNumber(conversationList.get(i).getAddress()));
+                if (!Objects.equals(conversationList.get(i).getDisplayAddress(), conversationList.get(i).getAddress())) {
+                    Log.d(TagHandler.MAIN_TAG, "LoadContactsTask: Changing from " +
+                        conversationList.get(i).getAddress() + " to " + conversationList.get(i).getDisplayAddress());
+                    activity.changeAddressTextInAdapter(i, conversationList.get(i).getDisplayAddress());
+                }
             }
         }
         return null;
@@ -43,6 +60,7 @@ public class LoadContactsTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        activity.setConversationListToAdapter(conversationList);
+        Log.d(TagHandler.MAIN_TAG, "LoadContactsTask: Finished loading contacts.");
+//        activity.setConversationListToAdapter(conversationList);
     }
 }

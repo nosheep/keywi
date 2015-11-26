@@ -1,7 +1,7 @@
 package ninja.nosheep.keywi;
 
 /**
- * Text om metoden
+ * Handles all permission
  *
  * @author David Söderberg
  * @since 2015-11-11
