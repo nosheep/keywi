@@ -3,6 +3,7 @@ package ninja.nosheep.keywi;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -45,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
 
     private CreateContactListTask createContactListTask;
     private LoadContactsTask loadContactsTask;
+    private Handler mHandler;
 
     private final static int REQUEST_CODE_PERMISSION_READ_SMS = 100;
     private final static int REQUEST_CODE_PERMISSION_READ_CONTACTS = 101;
@@ -61,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
 
         Log.d(TagHandler.MAIN_TAG, "Creating toolbar and stuff in " + (System.currentTimeMillis() - startTime) + "ms.");
 
+        mHandler = new Handler();
         ContactHandler.setContactListCreated(false);
 
         contactHandler = new ContactHandler(getContentResolver());
@@ -202,18 +205,30 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
     public void addConversationListToAdapter(ArrayList<Conversation> conversations) {
         messageAdapter.addConversationList(conversations);
         Log.d(TagHandler.MAIN_TAG, "Added the rest of the conversations.");
+        loadContactsTask = new LoadContactsTask(this, contactHandler);
+        loadContactsTask.execute();
     }
 
-    public void changeAddressTextInAdapter(int position, String newText) {
-        messageAdapter.changeAddressText(position, newText);
+    public void changeAddressTextInAdapter(final int position, final String newText) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                messageAdapter.changeAddressText(position, newText);
+            }
+        });
     }
 
     public ArrayList<Conversation> getConversationListFromAdapter() {
         return messageAdapter.getConversationList();
     }
 
-    public void setConversationListToAdapter(ArrayList<Conversation> conversationList) {
-        messageAdapter.setConversationList(conversationList);
+    public void setConversationListToAdapter(final ArrayList<Conversation> conversationList) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                messageAdapter.setConversationList(conversationList);
+            }
+        });
     }
 
     @Override

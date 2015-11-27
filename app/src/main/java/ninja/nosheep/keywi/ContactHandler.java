@@ -27,7 +27,6 @@ public class ContactHandler {
     }
 
     public static boolean isContactListCreated() {
-        Log.d(TagHandler.MAIN_TAG, "Requesting contactListCreated. " + contactListCreated);
         return contactListCreated;
     }
 

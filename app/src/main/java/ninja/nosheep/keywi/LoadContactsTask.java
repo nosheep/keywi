@@ -17,14 +17,7 @@ public class LoadContactsTask extends AsyncTask<Void, Void, Void> {
     private ContactHandler contactHandler;
     private MainActivity activity;
     private ArrayList<Conversation> conversationList;
-    String countryCode;
-
-    public LoadContactsTask(MainActivity activity, ContactHandler contactHandler, String countryCode) {
-        this.activity = activity;
-        this.contactHandler = contactHandler;
-        conversationList = activity.getConversationListFromAdapter();
-        this.countryCode = countryCode;
-    }
+    private long startTime;
 
     public LoadContactsTask(MainActivity activity, ContactHandler contactHandler) {
         this.activity = activity;
@@ -36,6 +29,8 @@ public class LoadContactsTask extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... params) {
 //        TASK: Set displayName of conversation, update the text in MessageAdapter
 
+        startTime = System.currentTimeMillis();
+        Log.d(TagHandler.MAIN_TAG, "LoadContactsTask: Init a new Task.");
         while (!ContactHandler.isContactListCreated()) {
             Log.d(TagHandler.MAIN_TAG, "LoadContactsTask: Contactlist isn't ready. Waiting 100ms");
             try {
@@ -48,8 +43,6 @@ public class LoadContactsTask extends AsyncTask<Void, Void, Void> {
             if (Objects.equals(conversationList.get(i).getDisplayAddress(), conversationList.get(i).getAddress())) {
                 conversationList.get(i).setDisplayAddress(contactHandler.getContactNameFromNumber(conversationList.get(i).getAddress()));
                 if (!Objects.equals(conversationList.get(i).getDisplayAddress(), conversationList.get(i).getAddress())) {
-                    Log.d(TagHandler.MAIN_TAG, "LoadContactsTask: Changing from " +
-                        conversationList.get(i).getAddress() + " to " + conversationList.get(i).getDisplayAddress());
                     activity.changeAddressTextInAdapter(i, conversationList.get(i).getDisplayAddress());
                 }
             }
@@ -60,7 +53,7 @@ public class LoadContactsTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        Log.d(TagHandler.MAIN_TAG, "LoadContactsTask: Finished loading contacts.");
+        Log.d(TagHandler.MAIN_TAG, "LoadContactsTask: Finished loading contacts. Took " + (System.currentTimeMillis() - startTime) + "ms");
 //        activity.setConversationListToAdapter(conversationList);
     }
 }

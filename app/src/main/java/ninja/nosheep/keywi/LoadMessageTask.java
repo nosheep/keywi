@@ -35,7 +35,6 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
         this.popularContactList = popularContactList;
         this.contactHandler = contactHandler;
         Log.d(TagHandler.MAIN_TAG, "Started loading the rest of the messages.");
-        Log.d(TagHandler.MAIN_TAG, "LoadMessageTask 1: ContactHandler: " + this.contactHandler.hashCode());
     }
 
     public void setIndexes(int addressIndex, int bodyIndex, int timeIndex, int readIndex, int folderIndex) {
@@ -116,8 +115,6 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
         activity.addConversationListToAdapter(messageList);
         conversationList = null;
         messageList = null;
-        LoadContactsTask loadContactsTask = new LoadContactsTask(activity, contactHandler, countryCode);
-        loadContactsTask.execute();
     }
 
     private void storeMessageInConversation(Conversation conversation, int addressIndex, int bodyIndex, MessageObject.MessageFolder folder,
