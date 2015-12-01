@@ -14,9 +14,9 @@ import java.util.Objects;
  */
 public class LoadContactsTask extends AsyncTask<Void, Void, Void> {
 
-    private ContactHandler contactHandler;
-    private MainActivity activity;
-    private ArrayList<Conversation> conversationList;
+    private final ContactHandler contactHandler;
+    private final MainActivity activity;
+    private final ArrayList<Conversation> conversationList;
     private long startTime;
 
     public LoadContactsTask(MainActivity activity, ContactHandler contactHandler) {

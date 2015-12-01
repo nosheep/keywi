@@ -17,23 +17,16 @@ import java.util.Objects;
  * @since 2015-11-18
  */
 public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
-    private MainActivity activity;
+    private final MainActivity activity;
     private Hashtable<String, Conversation> conversationList;
     private ArrayList<Conversation> messageList = new ArrayList<>();
-    private String countryCode;
-    private Hashtable<String, String> popularContactList;
-    private ContactHandler contactHandler;
 
     private int addressIndex, bodyIndex, timeIndex, readIndex, folderIndex;
     private String[] projection;
 
-    public LoadMessageTask(MainActivity activity, Hashtable<String, Conversation> conversationList,
-                           Hashtable<String, String> popularContactList, String countryCode, ContactHandler contactHandler) {
+    public LoadMessageTask(MainActivity activity, Hashtable<String, Conversation> conversationList) {
         this.activity = activity;
         this.conversationList = (Hashtable<String, Conversation>) conversationList.clone();
-        this.countryCode = countryCode;
-        this.popularContactList = popularContactList;
-        this.contactHandler = contactHandler;
         Log.d(TagHandler.MAIN_TAG, "Started loading the rest of the messages.");
     }
 
@@ -63,6 +56,9 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
 
         String address;
 
+        if (messageCursor == null) {
+            throw new NullPointerException("MessageCursor can't be null.");
+        }
         if (!messageCursor.moveToPosition(startIndex)) {
             return null;
         }

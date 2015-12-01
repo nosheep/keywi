@@ -1,10 +1,8 @@
 package ninja.nosheep.keywi;
 
 import android.content.ContentResolver;
-import android.content.Context;
 import android.database.Cursor;
 import android.provider.Telephony;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import java.util.Hashtable;
@@ -18,20 +16,15 @@ import java.util.Objects;
  */
 public class MessageHandler {
 
-    private MainActivity callingActivity;
+    private final MainActivity callingActivity;
 
-    private Hashtable<String, Conversation> conversationList = new Hashtable<>();
-    private Hashtable<String, String> popularContactList = new Hashtable<>();
-    private ContactHandler contactHandler;
+    private final Hashtable<String, Conversation> conversationList = new Hashtable<>();
+    private final ContactHandler contactHandler;
 
     private static final int INIT_CONVERSATION_COUNT = 10;
 
-    private String countryCode;
-
     public MessageHandler(MainActivity callingActivity, ContactHandler contactHandler) {
         this.callingActivity = callingActivity;
-        TelephonyManager tm = (TelephonyManager) callingActivity.getSystemService(Context.TELEPHONY_SERVICE);
-        countryCode = tm.getSimCountryIso();
         this.contactHandler = contactHandler;
     }
 
@@ -50,6 +43,10 @@ public class MessageHandler {
                 null,
                 null,
                 Telephony.Sms.DEFAULT_SORT_ORDER);
+
+        if (messageCursor == null) {
+            throw new NullPointerException("MessageCursor can't be null.");
+        }
 
         int addressIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS);
         int bodyIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.BODY);
@@ -106,10 +103,7 @@ public class MessageHandler {
         LoadContactsTask loadContactsTask = new LoadContactsTask(callingActivity, contactHandler);
         loadContactsTask.execute();
         LoadMessageTask loadMessageTask = new LoadMessageTask(callingActivity,
-                conversationList,
-                popularContactList,
-                countryCode,
-                contactHandler);
+                conversationList);
         loadMessageTask.setIndexes(addressIndex, bodyIndex, timeIndex, readIndex, folderIndex);
         loadMessageTask.setProjection(projection);
         loadMessageTask.execute(messageCursor.getPosition());

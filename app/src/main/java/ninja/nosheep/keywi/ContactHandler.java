@@ -17,9 +17,9 @@ import java.util.Map;
  */
 public class ContactHandler {
 
-    ContentResolver contentResolver;
-    private static Hashtable<String, String> popularContactList = new Hashtable<>();
-    private static Hashtable<String, String> contactList = new Hashtable<>();
+    private final ContentResolver contentResolver;
+    private static final Hashtable<String, String> popularContactList = new Hashtable<>();
+    private static final Hashtable<String, String> contactList = new Hashtable<>();
     private static boolean contactListCreated = false;
 
     public ContactHandler(ContentResolver contentResolver) {
@@ -47,6 +47,9 @@ public class ContactHandler {
                         ContactsContract.Contacts.HAS_PHONE_NUMBER + " = ?",
                         new String[]{"1"},
                         null);
+                if (cursor == null) {
+                    throw new NullPointerException("Cursor can't be null.");
+                }
                 if (!cursor.moveToFirst()) {
                     return;
                 }

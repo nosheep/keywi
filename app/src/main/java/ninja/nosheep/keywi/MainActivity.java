@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
                     if (ContextCompat.checkSelfPermission(getApplicationContext(),
                             Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED) {
                         Log.d(TagHandler.MAIN_TAG, "Read SMS permission GRANTED!");
-                        PermissionHandler.setOkToReadSMS(true);
+                        PermissionHandler.setOkToReadSMS();
                         messageHandler.createConversationList();
                         messageAdapter.notifyDataSetChanged();
                     }
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
                     if (ContextCompat.checkSelfPermission(getApplicationContext(),
                             Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
                         Log.d(TagHandler.MAIN_TAG, "Read contacs permission GRANTED!");
-                        PermissionHandler.setOkToReadContacts(true);
+                        PermissionHandler.setOkToReadContacts();
                         createContactListTask.execute();
                         loadContactsTask.execute();
                     }
@@ -155,11 +155,6 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
     protected void onResume() {
         super.onResume();
 //        TODO: Create a system where permission is checked onResume or onStart, and updates the list.
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
     }
 
     private void initRecyclerView() {
@@ -182,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
                     REQUEST_CODE_PERMISSION_READ_SMS);
 
         } else {
-            PermissionHandler.setOkToReadSMS(true);
+            PermissionHandler.setOkToReadSMS();
         }
 
         if (ContextCompat.checkSelfPermission(this,
@@ -194,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
                     REQUEST_CODE_PERMISSION_READ_CONTACTS);
 
         } else {
-            PermissionHandler.setOkToReadContacts(true);
+            PermissionHandler.setOkToReadContacts();
         }
     }
 

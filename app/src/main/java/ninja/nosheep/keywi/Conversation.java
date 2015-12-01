@@ -10,20 +10,20 @@ import java.util.ArrayList;
  */
 public class Conversation {
 
-    private String address;
+    private final String address;
     private String displayAddress;
     private boolean isRead;
 
     private int inboxCount = 0, sentCount = 0;
 
-    private ArrayList<SMSObject> messageList = new ArrayList<>();
+    private final ArrayList<Messageable> messageList = new ArrayList<>();
 
     public Conversation(String address, boolean isRead) {
         this.address = address;
         this.isRead = isRead;
     }
 
-    public void addMessage(SMSObject message) {
+    public void addMessage(Messageable message) {
         messageList.add(message);
         if (message.getFolder() == MessageObject.MessageFolder.INBOX) {
             inboxCount++;
@@ -33,7 +33,7 @@ public class Conversation {
         }
     }
 
-    public SMSObject getLatestMessage() {
+    public Messageable getLatestMessage() {
         if (messageList.size() != 0) {
             return messageList.get(0);
         }
@@ -79,7 +79,7 @@ public class Conversation {
         else return address;
     }
 
-    public ArrayList<SMSObject> getMessageList() {
+    public ArrayList<Messageable> getMessageList() {
         return messageList;
     }
 

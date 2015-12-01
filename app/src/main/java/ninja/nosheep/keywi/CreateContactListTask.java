@@ -10,7 +10,7 @@ import android.util.Log;
  * @since 2015-11-26
  */
 public class CreateContactListTask extends AsyncTask<Void, Void, Void> {
-    private ContactHandler contactHandler;
+    private final ContactHandler contactHandler;
 
     public CreateContactListTask(ContactHandler contactHandler) {
         this.contactHandler = contactHandler;

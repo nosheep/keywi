@@ -15,16 +15,16 @@ public class PermissionHandler {
         return okToReadContacts;
     }
 
-    public static void setOkToReadContacts(boolean okToReadContacts) {
-        PermissionHandler.okToReadContacts = okToReadContacts;
+    public static void setOkToReadContacts() {
+        PermissionHandler.okToReadContacts = true;
     }
 
     public static boolean isOkToReadSMS() {
         return okToReadSMS;
     }
 
-    public static void setOkToReadSMS(boolean okToReadSMS) {
-        PermissionHandler.okToReadSMS = okToReadSMS;
+    public static void setOkToReadSMS() {
+        PermissionHandler.okToReadSMS = true;
     }
 
 }

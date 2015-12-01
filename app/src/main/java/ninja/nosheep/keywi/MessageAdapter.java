@@ -18,8 +18,8 @@ import java.util.ArrayList;
  */
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> {
 
-    private LayoutInflater inflater;
-    private Context context;
+    private final LayoutInflater inflater;
+    private final Context context;
     private ArrayList<Conversation> conversationList = new ArrayList<>();
     private AdapterCallback mCallback;
 
@@ -82,9 +82,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        private RelativeLayout holderLayout;
-        private TextView addressTextView;
-        private TextView bodyTextView;
+        private final RelativeLayout holderLayout;
+        private final TextView addressTextView;
+        private final TextView bodyTextView;
 
         public ViewHolder(View itemView) {
             super(itemView);

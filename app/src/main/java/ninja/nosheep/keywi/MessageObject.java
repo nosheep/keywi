@@ -6,12 +6,12 @@ package ninja.nosheep.keywi;
  * @author David Söderberg
  * @since 2015-11-06
  */
-public abstract class MessageObject {
-    private long id;
-    private String address;
-    private String messageBody;
-    private String time;
-    private MessageFolder folder;
+public abstract class MessageObject implements Messageable {
+    private final long id;
+    private final String address;
+    private final String messageBody;
+    private final String time;
+    private final MessageFolder folder;
     private boolean isReaded;
 
     public enum MessageFolder {
