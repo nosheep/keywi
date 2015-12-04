@@ -30,9 +30,6 @@ public class TimeHandler {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(ms);
 
-        /**
-         *  TODO: Configure "today", "yesterday", etc instead of date.
-         */
         return getTimeInRelationToToday(calendar);
     }
 
@@ -61,23 +58,11 @@ public class TimeHandler {
                     tempMonth + (nowCalendar.get(Calendar.MONTH) + 1) + "" +
                     tempDay + nowCalendar.get(Calendar.DAY_OF_MONTH);
             todayDate = Integer.parseInt(todayDateString);
-
         }
     }
 
-    private static boolean isInLastWeek(int year, int month, int day) {
-        String tempMonth = "";
-        String tempDay = "";
-        if (month < 10) {
-            tempMonth += "0";
-        }
-        if (day < 10) {
-            tempDay += "0";
-        }
-        String date = year + "" + tempMonth + month + "" + tempDay + day;
-        Log.d(TagHandler.MAIN_TAG, "TimeHandler: IsInLastWeek? Date: " + date + ", ToDate: " + todayDateString);
-        int dateInt = Integer.parseInt(date);
-        return (todayDate - dateInt) <= 7;
+    private static boolean isInLastWeek(Calendar calendar) {
+        return nowCalendar.getTimeInMillis() - calendar.getTimeInMillis() < 7 * 24 * 60 * 60 * 1000;
     }
 
     private static boolean isToday(int year, int month, int day) {
@@ -90,9 +75,16 @@ public class TimeHandler {
             tempDay += "0";
         }
         String date = year + "" + tempMonth + month + "" + tempDay + day;
-        Log.d(TagHandler.MAIN_TAG, "TimeHandler: IsToday? Date: " + date + ", ToDate: " + todayDateString);
         int dateInt = Integer.parseInt(date);
         return dateInt == todayDate;
+    }
+
+    private static boolean isYesterday(Calendar calendar) {
+        Calendar yesterDay = new GregorianCalendar();
+        yesterDay.setTimeInMillis(nowCalendar.getTimeInMillis() - 24 * 60 * 60 * 1000);
+        return calendar.get(Calendar.YEAR) == yesterDay.get(Calendar.YEAR) &&
+                calendar.get(Calendar.MONTH) == yesterDay.get(Calendar.MONTH) &&
+                calendar.get(Calendar.DAY_OF_MONTH) == yesterDay.get(Calendar.DAY_OF_MONTH);
     }
 
     private String getTimeInRelationToToday(Calendar calendar) {
@@ -100,15 +92,23 @@ public class TimeHandler {
                 month = calendar.get(Calendar.MONTH) + 1,
                 day = calendar.get(Calendar.DAY_OF_MONTH);
         if (isToday(year, month, day)) {
-            Log.d(TagHandler.MAIN_TAG, "Conversation is from today!");
-            return calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+            String tempHour = "";
+            if (calendar.get(Calendar.HOUR_OF_DAY) < 10) {
+                tempHour += "0";
+            }
+            String tempMinute = "";
+            if (calendar.get(Calendar.MINUTE) < 10) {
+                tempMinute += "0";
+            }
+            return tempHour + calendar.get(Calendar.HOUR_OF_DAY) + ":" + tempMinute + calendar.get(Calendar.MINUTE);
         }
-        else if (isInLastWeek(year, month, day)) {
-            Log.d(TagHandler.MAIN_TAG, "Conversation is from the week!");
+        else if (isYesterday(calendar)) {
+            return context.getString(R.string.yesterday);
+        }
+        else if (isInLastWeek(calendar)) {
             return getNameOfDay(calendar.get(Calendar.DAY_OF_WEEK));
         }
         else {
-            Log.d(TagHandler.MAIN_TAG, "Conversation is older than a week.");
             String tempMonth = "";
             String tempDay = "";
             if (calendar.get(Calendar.MONTH) < 10) {
