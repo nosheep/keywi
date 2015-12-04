@@ -22,9 +22,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     private final Context context;
     private ArrayList<Conversation> conversationList = new ArrayList<>();
     private AdapterCallback mCallback;
+    private TimeHandler timeHandler;
 
     public MessageAdapter(Context context) {
         this.context = context;
+        timeHandler = new TimeHandler(context);
         inflater = LayoutInflater.from(context);
     }
 
@@ -41,8 +43,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
-        holder.addressTextView.setText(conversationList.get(position).getDisplayAddress());
-        holder.bodyTextView.setText(conversationList.get(position).getLatestMessageBody());
+        Conversation conv = conversationList.get(position);
+        holder.addressTextView.setText(conv.getDisplayAddress());
+        holder.bodyTextView.setText(conv.getLatestMessageBody());
+        holder.dateTextView.setText(timeHandler.getTimeFromString(conv.getLatestMessageTime()));
         holder.holderLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -85,12 +89,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         private final RelativeLayout holderLayout;
         private final TextView addressTextView;
         private final TextView bodyTextView;
+        private final TextView dateTextView;
 
         public ViewHolder(View itemView) {
             super(itemView);
             holderLayout = (RelativeLayout) itemView.findViewById(R.id.message_list_view);
             addressTextView = (TextView) itemView.findViewById(R.id.message_address_text_view);
             bodyTextView = (TextView) itemView.findViewById(R.id.message_body_text_view);
+            dateTextView = (TextView) itemView.findViewById(R.id.message_date_text_view);
         }
     }
 

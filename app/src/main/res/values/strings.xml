@@ -4,4 +4,12 @@
     <string name="no_messages">No messages founded</string>
     <string name="example_contact">Example Contact</string>
     <string name="example_message">Example message</string>
+    <string name="sunday">Sunday</string>
+    <string name="monday">Monday</string>
+    <string name="tuesday">Tuesday</string>
+    <string name="wednesday">Wednesday</string>
+    <string name="thursday">Thursday</string>
+    <string name="friday">Friday</string>
+    <string name="saturday">Saturday</string>
+
 </resources>
