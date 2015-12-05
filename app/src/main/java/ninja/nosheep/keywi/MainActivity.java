@@ -18,8 +18,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.pluscubed.recyclerfastscroll.RecyclerFastScroller;
-
 import java.util.ArrayList;
 
 import butterknife.Bind;
@@ -38,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
     @Bind(R.id.content_main_listview)
     RecyclerView messageRecyclerView;
     @Bind(R.id.content_main_scroller)
-    RecyclerFastScroller fastScroller;
+    RecyclerViewFastScroller fastScroller;
 
     private MessageHandler messageHandler;
     private MessageAdapter messageAdapter;
@@ -159,11 +157,29 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
 
     private void initRecyclerView() {
         messageRecyclerView.setHasFixedSize(true);
-        messageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        messageRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false) {
+            @Override
+            public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
+                super.onLayoutChildren(recycler, state);
+                final int firstVisibleItemPosition = findFirstVisibleItemPosition();
+                if (firstVisibleItemPosition != 0) {
+                    // this avoids trying to handle un-needed calls
+                    if (firstVisibleItemPosition == -1)
+                        //not initialized, or no items shown, so hide fast-scroller
+                        fastScroller.setVisibility(View.GONE);
+                    return;
+                }
+                final int lastVisibleItemPosition = findLastVisibleItemPosition();
+                int itemsShown = lastVisibleItemPosition - firstVisibleItemPosition + 1;
+                //if all items are shown, hide the fast-scroller
+                fastScroller.setVisibility(messageAdapter.getItemCount() > itemsShown ? View.VISIBLE : View.GONE);
+            }
+        });
 
         messageAdapter = new MessageAdapter(this);
         messageRecyclerView.setAdapter(messageAdapter);
         fastScroller.setRecyclerView(messageRecyclerView);
+        fastScroller.setViewsToUse(R.layout.recycler_view_fast_scroller__fast_scroller, R.id.fastscroller_bubble, R.id.fastscroller_handle);
     }
 
     private void askForPermissionOnStart() {

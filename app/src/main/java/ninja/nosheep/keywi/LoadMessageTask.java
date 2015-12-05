@@ -20,6 +20,7 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
     private final MainActivity activity;
     private Hashtable<String, Conversation> conversationList;
     private ArrayList<Conversation> messageList = new ArrayList<>();
+    private TimeHandler timeHandler;
 
     private int addressIndex, bodyIndex, timeIndex, readIndex, folderIndex;
     private String[] projection;
@@ -27,6 +28,7 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
     public LoadMessageTask(MainActivity activity, Hashtable<String, Conversation> conversationList) {
         this.activity = activity;
         this.conversationList = (Hashtable<String, Conversation>) conversationList.clone();
+        timeHandler = new TimeHandler(this.activity);
         Log.d(TagHandler.MAIN_TAG, "Started loading the rest of the messages.");
     }
 
@@ -84,7 +86,7 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
             Conversation conversation;
 
             if (!conversationList.containsKey(address)) {
-                conversation = new Conversation(address, isReaded);
+                conversation = new Conversation(address, isReaded, timeHandler);
 //                TODO: Unnecessarily to store address in SMS?
                 storeMessageInConversation(conversation, addressIndex, bodyIndex, folder,
                         timeIndex, isReaded, messageCursor);

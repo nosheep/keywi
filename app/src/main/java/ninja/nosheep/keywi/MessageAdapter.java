@@ -16,17 +16,15 @@ import java.util.ArrayList;
  * @author David Söderberg
  * @since 2015-11-11
  */
-public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> {
+public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> implements RecyclerViewFastScroller.BubbleTextGetter {
 
     private final LayoutInflater inflater;
     private final Context context;
     private ArrayList<Conversation> conversationList = new ArrayList<>();
     private AdapterCallback mCallback;
-    private TimeHandler timeHandler;
 
     public MessageAdapter(Context context) {
         this.context = context;
-        timeHandler = new TimeHandler(context);
         inflater = LayoutInflater.from(context);
     }
 
@@ -46,7 +44,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         Conversation conv = conversationList.get(position);
         holder.addressTextView.setText(conv.getDisplayAddress());
         holder.bodyTextView.setText(conv.getLatestMessageBody());
-        holder.dateTextView.setText(timeHandler.getTimeFromString(conv.getLatestMessageTime()));
+        holder.dateTextView.setText(conv.getLatestMessageTime());
         holder.holderLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -82,6 +80,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     public ArrayList<Conversation> getConversationList() {
         return conversationList;
+    }
+
+    @Override
+    public String getTextToShowInBubble(int pos) {
+        return conversationList.get(pos).getLatestMessageTime() + "";
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

@@ -20,12 +20,14 @@ public class MessageHandler {
 
     private final Hashtable<String, Conversation> conversationList = new Hashtable<>();
     private final ContactHandler contactHandler;
+    private TimeHandler timeHandler;
 
     private static final int INIT_CONVERSATION_COUNT = 10;
 
     public MessageHandler(MainActivity callingActivity, ContactHandler contactHandler) {
         this.callingActivity = callingActivity;
         this.contactHandler = contactHandler;
+        timeHandler = new TimeHandler(callingActivity);
     }
 
     public void createConversationList() {
@@ -82,7 +84,7 @@ public class MessageHandler {
 
             Conversation conversation;
             if (!conversationList.containsKey(address)) {
-                conversation = new Conversation(address, isReaded);
+                conversation = new Conversation(address, isReaded, timeHandler);
 //                TODO: Unnecessarily to store address in SMS?
                 storeMessageInConversation(conversation, addressIndex, bodyIndex, folder,
                         timeIndex, isReaded, messageCursor);

@@ -12,9 +12,11 @@
         android:background="@drawable/recycler_view_fast_scroller__bubble"
         android:gravity="center"
         android:textColor="#FFffffff"
-        android:textSize="48sp"
+        android:textSize="24sp"
+        android:paddingStart="@dimen/margin_16dp"
+        android:paddingEnd="@dimen/margin_16dp"
         android:visibility="visible"
-        tools:text="A"/>
+        tools:text=""/>
 
     <ImageView
         android:id="@+id/fastscroller_handle"
@@ -25,6 +27,7 @@
         android:paddingLeft="8dp"
         android:paddingStart="8dp"
         android:src="@drawable/recycler_view_fast_scroller__handle"
-        tools:ignore="RtlSymmetry"/>
+        tools:ignore="RtlSymmetry"
+        android:contentDescription="@string/fastscroller_handle_desc" />
 
 </merge>

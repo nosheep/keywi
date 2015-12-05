@@ -4,6 +4,7 @@
     <string name="no_messages">No messages founded</string>
     <string name="example_contact">Example Contact</string>
     <string name="example_message">Example message</string>
+
     <string name="sunday">Sunday</string>
     <string name="monday">Monday</string>
     <string name="tuesday">Tuesday</string>
@@ -12,5 +13,20 @@
     <string name="friday">Friday</string>
     <string name="saturday">Saturday</string>
     <string name="yesterday">Yesterday</string>
+
+    <string name="january_short">jan</string>
+    <string name="february_short">feb</string>
+    <string name="march_short">mar</string>
+    <string name="april_short">apr</string>
+    <string name="may_short">may</string>
+    <string name="june_short">june</string>
+    <string name="july_short">july</string>
+    <string name="august_short">aug</string>
+    <string name="september_short">sept</string>
+    <string name="october_short">oct</string>
+    <string name="november_short">nov</string>
+    <string name="december_short">dec</string>
+
+    <string name="fastscroller_handle_desc">Fastscroller Handle</string>
 
 </resources>

@@ -17,10 +17,12 @@ public class Conversation {
     private int inboxCount = 0, sentCount = 0;
 
     private final ArrayList<Messageable> messageList = new ArrayList<>();
+    private TimeHandler timeHandler;
 
-    public Conversation(String address, boolean isRead) {
+    public Conversation(String address, boolean isRead, TimeHandler timeHandler) {
         this.address = address;
         this.isRead = isRead;
+        this.timeHandler = timeHandler;
     }
 
     public void addMessage(Messageable message) {
@@ -47,11 +49,11 @@ public class Conversation {
         return "";
     }
 
-    public long getLatestMessageTime() {
+    public String getLatestMessageTime() {
         if (messageList.size() != 0) {
-            return Long.parseLong(messageList.get(0).getTime());
+            return timeHandler.getTimeFromLong(Long.valueOf(messageList.get(0).getTime()));
         }
-        return 0;
+        return "-";
     }
 
     public int getConversationSize() {
