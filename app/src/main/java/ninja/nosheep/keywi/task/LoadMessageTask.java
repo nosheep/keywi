@@ -1,4 +1,4 @@
-package ninja.nosheep.keywi;
+package ninja.nosheep.keywi.task;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
@@ -9,6 +9,14 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Objects;
+
+import ninja.nosheep.keywi.util.ContactHandler;
+import ninja.nosheep.keywi.data.Conversation;
+import ninja.nosheep.keywi.data.MessageObject;
+import ninja.nosheep.keywi.data.SMSObject;
+import ninja.nosheep.keywi.util.TagHandler;
+import ninja.nosheep.keywi.util.TimeHandler;
+import ninja.nosheep.keywi.ui.MainActivity;
 
 /**
  * Task for loading rest of the messages.

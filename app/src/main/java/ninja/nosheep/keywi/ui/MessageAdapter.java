@@ -1,4 +1,4 @@
-package ninja.nosheep.keywi;
+package ninja.nosheep.keywi.ui;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -9,6 +9,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+
+import ninja.nosheep.keywi.R;
+import ninja.nosheep.keywi.data.Conversation;
 
 /**
  * Adapter for message RecyclerView
@@ -48,7 +51,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         holder.holderLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCallback.onClick(conversationList.get(position));
+                mCallback.onConversationClick(conversationList.get(position));
             }
         });
     }
@@ -104,6 +107,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     }
 
     public interface AdapterCallback {
-        void onClick(Conversation conversation);
+        void onConversationClick(Conversation conversation);
     }
 }

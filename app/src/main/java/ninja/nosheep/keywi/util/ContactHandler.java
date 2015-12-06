@@ -1,4 +1,4 @@
-package ninja.nosheep.keywi;
+package ninja.nosheep.keywi.util;
 
 import android.content.ContentResolver;
 import android.database.Cursor;

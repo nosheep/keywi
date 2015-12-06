@@ -1,4 +1,4 @@
-package ninja.nosheep.keywi;
+package ninja.nosheep.keywi.data;
 
 /**
  * Interface for MessageObject

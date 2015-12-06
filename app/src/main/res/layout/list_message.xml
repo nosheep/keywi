@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:id="@+id/message_list_view"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:transitionName="@string/open_conversation_transition_string">
 
     <TextView
         android:id="@+id/message_address_text_view"

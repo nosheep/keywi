@@ -1,4 +1,4 @@
-package ninja.nosheep.keywi;
+package ninja.nosheep.keywi.util;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
@@ -7,6 +7,13 @@ import android.util.Log;
 
 import java.util.Hashtable;
 import java.util.Objects;
+
+import ninja.nosheep.keywi.data.Conversation;
+import ninja.nosheep.keywi.data.MessageObject;
+import ninja.nosheep.keywi.data.SMSObject;
+import ninja.nosheep.keywi.task.LoadContactsTask;
+import ninja.nosheep.keywi.task.LoadMessageTask;
+import ninja.nosheep.keywi.ui.MainActivity;
 
 /**
  * All handling of users messages belongs here.

@@ -1,4 +1,4 @@
-package ninja.nosheep.keywi;
+package ninja.nosheep.keywi.util;
 
 import android.content.Context;
 import android.util.Log;
@@ -6,6 +6,8 @@ import android.util.Log;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import ninja.nosheep.keywi.R;
 
 /**
  * Handles all information about time and date.

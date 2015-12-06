@@ -1,4 +1,4 @@
-package ninja.nosheep.keywi;
+package ninja.nosheep.keywi.data;
 
 /**
  * Class that will be used for SMS and MMS objects.

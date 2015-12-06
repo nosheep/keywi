@@ -1,7 +1,10 @@
-package ninja.nosheep.keywi;
+package ninja.nosheep.keywi.task;
 
 import android.os.AsyncTask;
 import android.util.Log;
+
+import ninja.nosheep.keywi.util.ContactHandler;
+import ninja.nosheep.keywi.util.TagHandler;
 
 /**
  * Task to create contact list

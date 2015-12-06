@@ -1,4 +1,4 @@
-package ninja.nosheep.keywi;
+package ninja.nosheep.keywi.util;
 
 /**
  * Handles all the tags when logging in Android LogCat.

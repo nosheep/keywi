@@ -1,4 +1,4 @@
-package ninja.nosheep.keywi;
+package ninja.nosheep.keywi.util;
 
 /**
  * Handles information about phone numbers.

@@ -1,6 +1,7 @@
-package ninja.nosheep.keywi;
+package ninja.nosheep.keywi.ui;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -22,6 +24,14 @@ import java.util.ArrayList;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import ninja.nosheep.keywi.R;
+import ninja.nosheep.keywi.data.Conversation;
+import ninja.nosheep.keywi.task.CreateContactListTask;
+import ninja.nosheep.keywi.task.LoadContactsTask;
+import ninja.nosheep.keywi.util.ContactHandler;
+import ninja.nosheep.keywi.util.MessageHandler;
+import ninja.nosheep.keywi.util.PermissionHandler;
+import ninja.nosheep.keywi.util.TagHandler;
 
 /**
  * Main activity.
@@ -37,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
     RecyclerView messageRecyclerView;
     @Bind(R.id.content_main_scroller)
     RecyclerViewFastScroller fastScroller;
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
 
     private MessageHandler messageHandler;
     private MessageAdapter messageAdapter;
@@ -171,16 +183,26 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
                 }
                 final int lastVisibleItemPosition = findLastVisibleItemPosition();
                 int itemsShown = lastVisibleItemPosition - firstVisibleItemPosition + 1;
-                //if all items are shown, hide the fast-scroller
                 fastScroller.setVisibility(messageAdapter.getItemCount() > itemsShown ? View.VISIBLE : View.GONE);
             }
         });
 
         messageAdapter = new MessageAdapter(this);
         messageRecyclerView.setAdapter(messageAdapter);
-        fastScroller.setRecyclerView(messageRecyclerView);
-        fastScroller.setViewsToUse(R.layout.recycler_view_fast_scroller__fast_scroller, R.id.fastscroller_bubble, R.id.fastscroller_handle);
     }
+
+    private int listScrollY = 0;
+    private RecyclerView.OnScrollListener listScroll = new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            listScrollY += dy;
+            if (listScrollY > 0 && toolbar.getTranslationZ() != 1f) {
+                toolbar.setTranslationZ(-1f);
+            } else if (listScrollY == 0 && toolbar.getTranslationZ() != 0) {
+                toolbar.setTranslationZ(0);
+            }
+        }
+    };
 
     private void askForPermissionOnStart() {
         Log.d(TagHandler.MAIN_TAG, "Permission check!");
@@ -216,6 +238,8 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
     public void addConversationListToAdapter(ArrayList<Conversation> conversations) {
         messageAdapter.addConversationList(conversations);
         Log.d(TagHandler.MAIN_TAG, "Added the rest of the conversations.");
+        fastScroller.setRecyclerView(messageRecyclerView);
+        fastScroller.setViewsToUse(R.layout.recycler_view_fast_scroller__fast_scroller, R.id.fastscroller_bubble, R.id.fastscroller_handle);
         loadContactsTask = new LoadContactsTask(this, contactHandler);
         loadContactsTask.execute();
     }
@@ -243,10 +267,16 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
     }
 
     @Override
-    public void onClick(Conversation conversation) {
-        Snackbar.make(messageRecyclerView,
-                conversation.getDisplayAddress(),
-                Snackbar.LENGTH_LONG)
-        .show();
+    public void onConversationClick(Conversation conversation) {
+        Intent intent = new Intent(this, ConversationActivity.class);
+        String transitionName = getString(R.string.open_conversation_transition_string);
+        View startingView = findViewById(R.id.message_list_view);
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this,
+                startingView,
+                transitionName);
+        ActivityCompat.startActivity(this,
+                intent,
+                options.toBundle());
     }
+
 }

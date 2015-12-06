@@ -28,5 +28,7 @@
     <string name="december_short">dec</string>
 
     <string name="fastscroller_handle_desc">Fastscroller Handle</string>
+    <string name="open_conversation_transition_string">ConversationOpen</string>
+    <string name="title_activity_conversation">ConversationActivity</string>
 
 </resources>

@@ -1,6 +1,8 @@
-package ninja.nosheep.keywi;
+package ninja.nosheep.keywi.data;
 
 import java.util.ArrayList;
+
+import ninja.nosheep.keywi.util.TimeHandler;
 
 /**
  * Holds a message-conversation

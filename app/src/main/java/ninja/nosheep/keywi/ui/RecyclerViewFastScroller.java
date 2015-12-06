@@ -1,4 +1,4 @@
-package ninja.nosheep.keywi;
+package ninja.nosheep.keywi.ui;
 
 /**
  * All credits to AndroidDeveloperLB

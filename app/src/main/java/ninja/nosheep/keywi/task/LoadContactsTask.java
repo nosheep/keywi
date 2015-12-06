@@ -1,10 +1,15 @@
-package ninja.nosheep.keywi;
+package ninja.nosheep.keywi.task;
 
 import android.os.AsyncTask;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Objects;
+
+import ninja.nosheep.keywi.util.ContactHandler;
+import ninja.nosheep.keywi.data.Conversation;
+import ninja.nosheep.keywi.util.TagHandler;
+import ninja.nosheep.keywi.ui.MainActivity;
 
 /**
  * Task that loads contacts to conversations.
