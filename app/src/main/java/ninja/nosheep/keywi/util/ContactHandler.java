@@ -18,7 +18,7 @@ import java.util.Map;
 public class ContactHandler {
 
     private final ContentResolver contentResolver;
-    private static final Hashtable<String, String> popularContactList = new Hashtable<>();
+    private static final Hashtable<String, String> popularContactMap = new Hashtable<>();
     private static final Hashtable<String, String> contactList = new Hashtable<>();
     private static boolean contactListCreated = false;
 
@@ -34,19 +34,17 @@ public class ContactHandler {
         ContactHandler.contactListCreated = contactListCreated;
     }
 
-    public void createContactList() {
-        long startTime = System.currentTimeMillis();
-        Log.d(TagHandler.MAIN_TAG, "ContactHandler: Started creating contactlist.");
+    /**
+     * Receives contacts from users contactlist.
+     */
+    public synchronized void createContactList() {
         if (!ContactHandler.isContactListCreated()) {
+
+            long startTime = System.currentTimeMillis();
+            Log.d(TagHandler.MAIN_TAG, "ContactHandler: Started creating contactlist from users list.");
             if (PermissionHandler.isOkToReadContacts()) {
                 String name, number;
-                String[] mPhoneNumberProjection =
-                        {ContactsContract.CommonDataKinds.Phone.NUMBER, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME};
-                Cursor cursor = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                        mPhoneNumberProjection,
-                        ContactsContract.Contacts.HAS_PHONE_NUMBER + " = ?",
-                        new String[]{"1"},
-                        null);
+                Cursor cursor = createContactCursor();
                 if (cursor == null) {
                     throw new NullPointerException("Cursor can't be null.");
                 }
@@ -59,53 +57,70 @@ public class ContactHandler {
                     contactList.put(number, name);
                 } while (cursor.moveToNext());
                 cursor.close();
-                Log.d(TagHandler.MAIN_TAG, "Setting contactListCreated to " + contactListCreated);
+                Log.d(TagHandler.MAIN_TAG, "ContactHandler: Created contactlist in " + (System.currentTimeMillis() - startTime) + "ms");
+                contactListCreated = true;
             }
+
         } else {
             Log.v(TagHandler.MAIN_TAG, "ContactHandler: Contactlist is already created.");
+            contactListCreated = true;
         }
-        contactListCreated = true;
-        Log.d(TagHandler.MAIN_TAG, "ContactHandler: Created contactlist in " + (System.currentTimeMillis() - startTime) + "ms");
+    }
+
+    /**
+     * Creates the cursor that searches through users list.
+     */
+    private Cursor createContactCursor() {
+        String[] mPhoneNumberProjection =
+                {ContactsContract.CommonDataKinds.Phone.NUMBER, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME};
+        return contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                mPhoneNumberProjection,
+                ContactsContract.Contacts.HAS_PHONE_NUMBER + " = ?",
+                new String[]{"1"},
+                null);
     }
 
     public String getContactNameFromNumber(String number) {
         if (PermissionHandler.isOkToReadContacts()) {
             if (!isContactListCreated()) {
                 createContactList();
-            } else {
-                if (!contactList.containsKey(number)) {
-                    for (Map.Entry<String, String> entry : contactList.entrySet()) {
-                        if (PhoneNumberUtils.compare(entry.getKey(), number)) {
-                            return entry.getValue();
-                        }
+            }
+            if (!contactList.containsKey(number)) {
+                for (Map.Entry<String, String> entry : contactList.entrySet()) {
+                    if (PhoneNumberUtils.compare(entry.getKey(), number)) {
+                        return entry.getValue();
                     }
-                } else {
-                    return contactList.get(number);
                 }
+            } else {
+                return contactList.get(number);
             }
         }
         return number;
     }
 
+    /**
+     *  For faster access to get the already used phone number, we use a popularContactMap
+     *  instead of using PhoneNumberUtils.compare() of every number, since it's very heavy.
+     */
     public static String returnAddressFromPopularContacts(String address) {
-        if (!popularContactList.containsKey(address)) {
-//                If number isn't saved in popularContactList
+        if (!popularContactMap.containsKey(address)) {
+//                If number isn't saved in popularContactMap
 
 //                Checking if our address is the same as another one
             String savedAddress = "";
-            for (String numbers : popularContactList.values()) {
+            for (String numbers : popularContactMap.values()) {
                 if (PhoneNumberUtils.compare(address, numbers)) {
                     savedAddress = numbers;
                     break;
                 }
             }
 
-//                If we didn't found a similar address in our popularContactList, then we save the current address.
+//                If we didn't found a similar address in our popularContactMap, then we save the current address.
             if (savedAddress.isEmpty()) savedAddress = address;
-            popularContactList.put(address, savedAddress);
+            popularContactMap.put(address, savedAddress);
             address = savedAddress;
         } else {
-            address = popularContactList.get(address);
+            address = popularContactMap.get(address);
         }
         return address;
     }

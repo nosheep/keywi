@@ -38,7 +38,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString() + " must implement AdapterCallback");
         }
-        View view = inflater.inflate(R.layout.list_message, parent, false);
+        View view = inflater.inflate(R.layout.list_item_conversation, parent, false);
         return new ViewHolder(view);
     }
 

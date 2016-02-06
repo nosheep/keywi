@@ -19,7 +19,7 @@ public class Conversation {
     private int inboxCount = 0, sentCount = 0;
 
     private final ArrayList<Messageable> messageList = new ArrayList<>();
-    private TimeHandler timeHandler;
+    private final TimeHandler timeHandler;
 
     public Conversation(String address, boolean isRead, TimeHandler timeHandler) {
         this.address = address;
@@ -38,21 +38,21 @@ public class Conversation {
     }
 
     public Messageable getLatestMessage() {
-        if (messageList.size() != 0) {
+        if (!isMessageListEmpty()) {
             return messageList.get(0);
         }
         return null;
     }
 
     public String getLatestMessageBody() {
-        if (messageList.size() != 0) {
+        if (!isMessageListEmpty()) {
             return messageList.get(0).getMessageBody();
         }
         return "";
     }
 
     public String getLatestMessageTime() {
-        if (messageList.size() != 0) {
+        if (!isMessageListEmpty()) {
             return timeHandler.getTimeFromLong(Long.valueOf(messageList.get(0).getTime()));
         }
         return "-";
@@ -78,16 +78,21 @@ public class Conversation {
         return sentCount;
     }
 
-    public String getDisplayAddress() {
+
+    synchronized public String getDisplayAddress() {
         if (displayAddress != null) return displayAddress;
         else return address;
+    }
+
+    private boolean isMessageListEmpty() {
+        return messageList.size() == 0;
     }
 
     public ArrayList<Messageable> getMessageList() {
         return messageList;
     }
 
-    public void setDisplayAddress(String displayAddress) {
+    synchronized public void setDisplayAddress(String displayAddress) {
         this.displayAddress = displayAddress;
     }
 }

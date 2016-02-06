@@ -35,7 +35,7 @@ import ninja.nosheep.keywi.util.TagHandler;
 
 /**
  * Main activity.
- * Contains all the texts in a RecyclerView.
+ * Contains all the conversations in a RecyclerView.
  *
  * @author David Söderberg
  * @since 2015-10-26

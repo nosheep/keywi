@@ -47,11 +47,7 @@ public class MessageHandler {
                 Telephony.Sms.TYPE};
 
         ContentResolver contentResolver = callingActivity.getContentResolver();
-        Cursor messageCursor = contentResolver.query(Telephony.Sms.CONTENT_URI,
-                projection,
-                null,
-                null,
-                Telephony.Sms.DEFAULT_SORT_ORDER);
+        Cursor messageCursor = MessageHandler.createMessageCursor(contentResolver, projection);
 
         if (messageCursor == null) {
             throw new NullPointerException("MessageCursor can't be null.");
@@ -62,6 +58,7 @@ public class MessageHandler {
         int timeIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.DATE);
         int readIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.READ);
         int folderIndex = messageCursor.getColumnIndexOrThrow(Telephony.Sms.TYPE);
+
         String address;
 
 //        TODO: Create a contactList from contactHandler. Save as hashTable (in contactList)
@@ -77,12 +74,7 @@ public class MessageHandler {
                 continue;
             }
 
-            MessageObject.MessageFolder folder;
-            if (messageCursor.getString(folderIndex).contains("1")) {
-                folder = MessageObject.MessageFolder.INBOX;
-            } else {
-                folder = MessageObject.MessageFolder.SENT;
-            }
+            MessageObject.MessageFolder folder = MessageHandler.getMessageFolder(messageCursor.getString(folderIndex), messageCursor);
 
             boolean isReaded = Objects.equals(messageCursor.getString(readIndex), "1");
 
@@ -120,6 +112,22 @@ public class MessageHandler {
 
 //        TODO: Start a LoadContactTask with the INIT_CONVERSATION_COUNT first conversations
 
+    }
+
+    public static Cursor createMessageCursor(ContentResolver contentResolver, String[] projection) {
+        return contentResolver.query(Telephony.Sms.CONTENT_URI,
+                projection,
+                null,
+                null,
+                Telephony.Sms.DEFAULT_SORT_ORDER);
+    }
+
+    public static MessageObject.MessageFolder getMessageFolder(String folderString, Cursor messageCursor) {
+        if (folderString.contains("1")) {
+            return MessageObject.MessageFolder.INBOX;
+        } else {
+            return MessageObject.MessageFolder.SENT;
+        }
     }
 
     private void storeMessageInConversation(Conversation conversation, int addressIndex, int bodyIndex, MessageObject.MessageFolder folder,

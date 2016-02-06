@@ -1,6 +1,7 @@
 package ninja.nosheep.keywi.ui;
 
 /**
+ * Just did small tweaks of this really useful class.
  * All credits to AndroidDeveloperLB
  * https://github.com/AndroidDeveloperLB
  *

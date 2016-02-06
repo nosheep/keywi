@@ -3,41 +3,43 @@ package ninja.nosheep.keywi.task;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.os.AsyncTask;
-import android.provider.Telephony;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Objects;
 
-import ninja.nosheep.keywi.util.ContactHandler;
 import ninja.nosheep.keywi.data.Conversation;
 import ninja.nosheep.keywi.data.MessageObject;
 import ninja.nosheep.keywi.data.SMSObject;
+import ninja.nosheep.keywi.ui.MainActivity;
+import ninja.nosheep.keywi.util.ContactHandler;
+import ninja.nosheep.keywi.util.MessageHandler;
 import ninja.nosheep.keywi.util.TagHandler;
 import ninja.nosheep.keywi.util.TimeHandler;
-import ninja.nosheep.keywi.ui.MainActivity;
 
 /**
  * Task for loading rest of the messages.
+ * Used for faster start up.
  *
  * @author David Söderberg
  * @since 2015-11-18
  */
 public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
     private final MainActivity activity;
-    private Hashtable<String, Conversation> conversationList;
-    private ArrayList<Conversation> messageList = new ArrayList<>();
-    private TimeHandler timeHandler;
+    private final Hashtable<String, Conversation> conversationList;
+    private final ArrayList<Conversation> messageList = new ArrayList<>();
+    private final TimeHandler timeHandler;
 
     private int addressIndex, bodyIndex, timeIndex, readIndex, folderIndex;
     private String[] projection;
 
+    @SuppressWarnings("unchecked")
     public LoadMessageTask(MainActivity activity, Hashtable<String, Conversation> conversationList) {
         this.activity = activity;
         this.conversationList = (Hashtable<String, Conversation>) conversationList.clone();
         timeHandler = new TimeHandler(this.activity);
-        Log.d(TagHandler.MAIN_TAG, "Started loading the rest of the messages.");
+        Log.d(TagHandler.MAIN_TAG, "LoadMessageTask: Started loading the rest of the messages.");
     }
 
     public void setIndexes(int addressIndex, int bodyIndex, int timeIndex, int readIndex, int folderIndex) {
@@ -58,11 +60,7 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
         int startIndex = params[0];
 
         ContentResolver contentResolver = activity.getContentResolver();
-        Cursor messageCursor = contentResolver.query(Telephony.Sms.CONTENT_URI,
-                projection,
-                null,
-                null,
-                Telephony.Sms.DEFAULT_SORT_ORDER);
+        Cursor messageCursor = MessageHandler.createMessageCursor(contentResolver, projection);
 
         String address;
 
@@ -75,24 +73,18 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
         do {
             address = messageCursor.getString(addressIndex);
             if (address == null) {
-                Log.d(TagHandler.MAIN_TAG, "Draft found. Message body: " + messageCursor.getString(bodyIndex));
+                Log.d(TagHandler.MAIN_TAG, "LoadMessageTask: Draft found. Message body: " + messageCursor.getString(bodyIndex));
                 continue;
             }
 
-            MessageObject.MessageFolder folder;
-            if (messageCursor.getString(folderIndex).contains("1")) {
-                folder = MessageObject.MessageFolder.INBOX;
-            }
-            else {
-                folder = MessageObject.MessageFolder.SENT;
-            }
+            MessageObject.MessageFolder folder = MessageHandler.getMessageFolder(messageCursor.getString(folderIndex), messageCursor);
 
             boolean isReaded = Objects.equals(messageCursor.getString(readIndex), "1");
 
             address = ContactHandler.returnAddressFromPopularContacts(address);
 
+//            TODO: Duplicated code from MessageHandler
             Conversation conversation;
-
             if (!conversationList.containsKey(address)) {
                 conversation = new Conversation(address, isReaded, timeHandler);
 //                TODO: Unnecessarily to store address in SMS?
@@ -119,8 +111,6 @@ public class LoadMessageTask extends AsyncTask<Integer, Void, Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
         activity.addConversationListToAdapter(messageList);
-        conversationList = null;
-        messageList = null;
     }
 
     private void storeMessageInConversation(Conversation conversation, int addressIndex, int bodyIndex, MessageObject.MessageFolder folder,

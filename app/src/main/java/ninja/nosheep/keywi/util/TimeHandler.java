@@ -40,7 +40,7 @@ public class TimeHandler {
         return calendar;
     }
 
-    private static void createNowCalendar() {
+    private synchronized static void createNowCalendar() {
         if (nowCalendar == null) {
             Log.d(TagHandler.MAIN_TAG, "TimeHandler: Calendar is deprecated||null, updating!");
             nowCalendar = new GregorianCalendar();
