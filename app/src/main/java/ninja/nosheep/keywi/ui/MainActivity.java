@@ -106,6 +106,13 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+//        TODO: Create a system where permission is checked onResume or onStart, and updates the list.
+//        https://youtu.be/C8lUdPVSzDk
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -159,12 +166,6 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.Ad
                 Log.e(TagHandler.MAIN_TAG, "MainActivity: Got a request code that doesn't exist.");
                 break;
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-//        TODO: Create a system where permission is checked onResume or onStart, and updates the list.
     }
 
     private void initRecyclerView() {
